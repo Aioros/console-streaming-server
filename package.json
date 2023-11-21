@@ -1,0 +1,26 @@
+{
+  "name": "console-streaming-server",
+  "version": "1.0.0",
+  "description": "",
+  "main": "main.js",
+  "scripts": {
+    "start": "qode main.js",
+    "debug": "qode --inspect main.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Aioros/console-streaming-server.git"
+  },
+  "author": "Aioros",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Aioros/console-streaming-server/issues"
+  },
+  "homepage": "https://github.com/Aioros/console-streaming-server#readme",
+  "dependencies": {
+    "@nodegui/nodegui": "^0.62.0",
+    "dns-proxy": "^1.1.0",
+    "node-media-server": "^2.6.2",
+    "open": "^9.1.0"
+  }
+}

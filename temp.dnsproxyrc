@@ -1,0 +1,14 @@
+{
+  "port": 53,
+  "host": "192.168.1.16",
+  "nameservers": [
+    "1.1.1.1",
+    "1.0.0.1"
+  ],
+  "servers": {},
+  "domains": {
+    "*.contribute.live-video.net": "192.168.1.16",
+    "live*.twitch.tv": "192.168.1.16"
+  },
+  "hosts": {}
+}
