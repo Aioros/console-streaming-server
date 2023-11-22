@@ -1,4 +1,5 @@
 const NodeMediaServer = require("node-media-server");
+const { Client: RtmpClient } = require('rtmp-client');
 const DnsProxyServer = require("dns-proxy-lib");
 
 let domains = [
@@ -16,6 +17,10 @@ class ConsoleStreamingServer {
 
     setMainIP(ip) {
         this.mainIP = ip;
+    }
+
+    getMainIP() {
+        return this.mainIP;
     }
 
     startDNS() {
@@ -47,7 +52,7 @@ class ConsoleStreamingServer {
         const resolver = new Resolver();
         resolver.setServers([this.mainIP]);
         resolver.resolve4(domains[0], (err, addresses) => {
-            callback(!err);
+            callback(!err && addresses[0] == this.mainIP);
         });
     }
 
@@ -85,12 +90,13 @@ class ConsoleStreamingServer {
     }
       
     checkRTMPStatus(callback) {
-        const NodeRtmpClient = require("./node_modules/node-media-server/src/node_rtmp_client");
-        let rc = new NodeRtmpClient("rtmp://"+this.mainIP+"/app/fakestream");
-        rc.onSocketError = () => callback(false);
-        rc.onSocketData = () => callback(true);
-        rc._start();
-        rc.stop();
+        if (this.rc) {
+            this.rc.close();
+        }
+        this.rc = new RtmpClient(this.mainIP, 1935);
+		this.rc.connect()
+            .then(() => {this.rc.close(); callback(true);})
+            .catch(() => {callback(false);});
     }
 
     start() {

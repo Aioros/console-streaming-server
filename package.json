@@ -21,6 +21,7 @@
     "@nodegui/nodegui": "^0.62.0",
     "dns-proxy": "^1.1.0",
     "node-media-server": "^2.6.2",
-    "open": "^9.1.0"
+    "open": "^9.1.0",
+    "rtmp-client": "^1.5.3"
   }
 }

@@ -86,9 +86,13 @@ class CssGUI {
                 if (isStatusOk) {
                     serverCheckImage.load("green-circle-icon.png");
                     serverCheckLabel.setText("Server Online");
+                    serverStartButton.setDisabled(true);
+                    serverStopButton.setDisabled(false);
                 } else {
                     serverCheckImage.load("red-circle-icon.png");
                     serverCheckLabel.setText("Server Offline");
+                    serverStartButton.setDisabled(false);
+                    serverStopButton.setDisabled(true);
                 }
                 serverCheckLabelImage.setPixmap(serverCheckImage);
             });
@@ -120,11 +124,15 @@ class CssGUI {
         serverStartButton.addEventListener("clicked", this.css.start.bind(this.css));
         const serverStopButton = new QT.QPushButton();
         serverStopButton.setText("Stop");
+        serverStopButton.setDisabled(true);
         serverStopButton.addEventListener("clicked", this.css.stop.bind(this.css));
+        const homeText = new QT.QLabel();
+        homeText.setText("Don't forget to set your console's primary DNS server as shown in the instructions tab!");
         homePage.layout().addWidget(serverStatus);
         homePage.layout().addWidget(interfaceSelector);
         homePage.layout().addWidget(serverStartButton);
         homePage.layout().addWidget(serverStopButton);
+        homePage.layout().addWidget(homeText);
 
         const instructionsPage = new QT.QWidget();
         instructionsPage.setLayout(new QT.FlexLayout());
@@ -135,8 +143,16 @@ class CssGUI {
         instructionsImageLabel.setMovie(instructionsImage);
         instructionsPage.layout().addWidget(instructionsImageLabel);
         
-        const advancedPage = new QT.QLabel();
-        advancedPage.setText("advanced");
+        const advancedPage = new QT.QWidget();
+        advancedPage.setLayout(new QT.FlexLayout);
+
+        const nodeMediaServerLink = new QT.QPushButton();
+        nodeMediaServerLink.setText("Open NodeMediaServer admin page");
+        nodeMediaServerLink.addEventListener("clicked", () => {
+            var open = import("open").then((open) => {open.default("http://localhost:8080/admin")});
+        });
+        advancedPage.layout().addWidget(nodeMediaServerLink);
+
         pages.addWidget(homePage);
         pages.addWidget(instructionsPage);
         pages.addWidget(advancedPage);
