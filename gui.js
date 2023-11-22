@@ -1,5 +1,4 @@
 const QT = require("@nodegui/nodegui");
-const { networkInterfaces } = require('os');
 
 class CssGUI {
     constructor(css) {
@@ -55,7 +54,6 @@ class CssGUI {
 
         const tabs = new QT.QListWidget();
         const homeTab = new QT.QListWidgetItem("Home");
-        homeTab.setData
         tabs.addItem(homeTab);
         tabs.addItem(new QT.QListWidgetItem("Instructions"));
         tabs.addItem(new QT.QListWidgetItem("Advanced"));
@@ -66,6 +64,7 @@ class CssGUI {
         rightPane.setLayout(new QT.FlexLayout());
         
         const pages = new QT.QStackedWidget();
+
         const homePage = new QT.QWidget();
         homePage.setLayout(new QT.FlexLayout());
         const serverStatus = new QT.QWidget();
@@ -82,8 +81,8 @@ class CssGUI {
         serverStatus.layout().addWidget(serverCheckLabelImage);
         serverStatus.layout().addWidget(serverCheckLabel);
         this.serverCheckInterval = setInterval(() => {
-            this.css.checkStatus((isStatusOk) => {
-                if (isStatusOk) {
+            this.css.checkStatus((status) => {
+                if (status.dnsStatus != "ko" && status.rtmpStatus != "ko" ) {
                     serverCheckImage.load("green-circle-icon.png");
                     serverCheckLabel.setText("Server Online");
                     serverStartButton.setDisabled(true);
@@ -97,28 +96,6 @@ class CssGUI {
                 serverCheckLabelImage.setPixmap(serverCheckImage);
             });
         }, 5000);
-        const interfaceSelector = new QT.QComboBox();
-        const nets = networkInterfaces();
-        const results = Object.create(null);
-        for (const name of Object.keys(nets)) {
-            for (const net of nets[name]) {
-                const familyV4Value = typeof net.family === 'string' ? 'IPv4' : 4
-                if (net.family === familyV4Value && !net.internal) {
-                    if (!results[name]) {
-                        results[name] = [];
-                    }
-                    results[name].push(net.address);
-                }
-            }
-        }
-        for (let name in results) {
-            interfaceSelector.addItem(undefined, name + " (" + results[name] + ")", new QT.QVariant(results[name]));
-        }
-        this.css.setMainIP(interfaceSelector.itemData(interfaceSelector.currentIndex()).toString());
-        interfaceSelector.addEventListener("currentIndexChanged", (index) => {
-            this.css.setMainIP(interfaceSelector.itemData(index).toString());
-            this.css.restartDNS();
-        });
         const serverStartButton = new QT.QPushButton();
         serverStartButton.setText("Start");
         serverStartButton.addEventListener("clicked", this.css.start.bind(this.css));
@@ -129,7 +106,6 @@ class CssGUI {
         const homeText = new QT.QLabel();
         homeText.setText("Don't forget to set your console's primary DNS server as shown in the instructions tab!");
         homePage.layout().addWidget(serverStatus);
-        homePage.layout().addWidget(interfaceSelector);
         homePage.layout().addWidget(serverStartButton);
         homePage.layout().addWidget(serverStopButton);
         homePage.layout().addWidget(homeText);
@@ -145,12 +121,111 @@ class CssGUI {
         
         const advancedPage = new QT.QWidget();
         advancedPage.setLayout(new QT.FlexLayout);
-
         const nodeMediaServerLink = new QT.QPushButton();
         nodeMediaServerLink.setText("Open NodeMediaServer admin page");
         nodeMediaServerLink.addEventListener("clicked", () => {
             var open = import("open").then((open) => {open.default("http://localhost:8080/admin")});
         });
+        if (!this.css.getConfig().get("rtmp.http")) {
+            nodeMediaServerLink.setDisabled(true);
+        }
+        const modeField = new QT.QWidget();
+        modeField.setLayout(new QT.FlexLayout());
+        modeField.setProperty("class", "advanced-form-field");
+        const modeLabel = new QT.QLabel();
+        modeLabel.setText("Mode");
+        const modeSelector = new QT.QComboBox();
+        modeSelector.addItem(undefined, "Standard (DNS + RTMP server)", new QT.QVariant("standard"));
+        modeSelector.addItem(undefined, "DNS server only", new QT.QVariant("dnsonly"));
+        modeSelector.addItem(undefined, "RTMP server only", new QT.QVariant("rtmponly"));
+        modeSelector.addEventListener("currentIndexChanged", (index) => {
+            let config = this.css.getConfig();
+            if (modeSelector.itemData(index).toString() == "standard") {
+                config.set("dns.active", true);
+                config.set("rtmp.active", true);
+            } else if (modeSelector.itemData(index).toString() == "dnsonly") {
+                config.set("dns.active", true);
+                config.set("rtmp.active", false);
+            } else if (modeSelector.itemData(index).toString() == "rtmponly") {
+                config.set("dns.active", false);
+                config.set("rtmp.active", true);
+            }
+        });
+        modeField.layout().addWidget(modeLabel);
+        modeField.layout().addWidget(modeSelector);
+        const dnsPortField = new QT.QWidget();
+        dnsPortField.setLayout(new QT.FlexLayout());
+        dnsPortField.setProperty("class", "advanced-form-field");
+        const dnsPortLabel = new QT.QLabel();
+        dnsPortLabel.setText("DNS Port");
+        const dnsPortInput = new QT.QLineEdit();
+        dnsPortInput.setInputMask("99000");
+        dnsPortInput.setText(this.css.config.get("dns.port"));
+        dnsPortInput.addEventListener("textEdited", (newText) => {
+            this.css.getConfig().set("dns.port", parseInt(newText));
+        });
+        dnsPortField.layout().addWidget(dnsPortLabel);
+        dnsPortField.layout().addWidget(dnsPortInput);
+        const dnsSendToField = new QT.QWidget();
+        dnsSendToField.setLayout(new QT.FlexLayout());
+        dnsSendToField.setProperty("class", "advanced-form-field");
+        const dnsSendToLabel = new QT.QLabel();
+        dnsSendToLabel.setText("RTMP Server Location");
+        const dnsSendToInput = new QT.QLineEdit();
+        dnsSendToInput.setText(this.css.config.get("dns.sendTo"));
+        dnsSendToInput.addEventListener("textEdited", (newText) => {
+            this.css.getConfig().set("dns.sendTo", newText);
+        });
+        dnsSendToField.layout().addWidget(dnsSendToLabel);
+        dnsSendToField.layout().addWidget(dnsSendToInput);
+        const serverRestartButton = new QT.QPushButton();
+        const rtmpPortField = new QT.QWidget();
+        rtmpPortField.setLayout(new QT.FlexLayout());
+        rtmpPortField.setProperty("class", "advanced-form-field");
+        const rtmpPortLabel = new QT.QLabel();
+        rtmpPortLabel.setText("RTMP Port");
+        const rtmpPortInput = new QT.QLineEdit();
+        rtmpPortInput.setInputMask("99000");
+        rtmpPortInput.setText(this.css.config.get("rtmp.port"));
+        rtmpPortInput.addEventListener("textEdited", (newText) => {
+            this.css.getConfig().set("rtmp.port", parseInt(newText));
+        });
+        rtmpPortField.layout().addWidget(rtmpPortLabel);
+        rtmpPortField.layout().addWidget(rtmpPortInput);
+        const rtmpHttpField = new QT.QWidget();
+        rtmpHttpField.setLayout(new QT.FlexLayout());
+        rtmpHttpField.setProperty("class", "advanced-form-field");
+        const rtmpHttpLabel = new QT.QLabel();
+        rtmpHttpLabel.setText("Include RTMP/HTTP Server");
+        const rtmpHttpInput = new QT.QCheckBox();
+        rtmpHttpInput.setChecked(this.css.config.get("rtmp.http.active"));
+        rtmpHttpInput.addEventListener("stateChanged", (newState) => {
+            this.css.getConfig().set("rtmp.http.active", !!newState);
+        });
+        rtmpHttpField.layout().addWidget(rtmpHttpLabel);
+        rtmpHttpField.layout().addWidget(rtmpHttpInput);
+        const rtmpHttpPortField = new QT.QWidget();
+        rtmpHttpPortField.setLayout(new QT.FlexLayout());
+        rtmpHttpPortField.setProperty("class", "advanced-form-field");
+        const rtmpHttpPortLabel = new QT.QLabel();
+        rtmpHttpPortLabel.setText("HTTP Port");
+        const rtmpHttpPortInput = new QT.QLineEdit();
+        rtmpHttpPortInput.setInputMask("99000");
+        rtmpHttpPortInput.setText(this.css.config.get("rtmp.http.port"));
+        rtmpHttpPortInput.addEventListener("textEdited", (newText) => {
+            this.css.getConfig().set("rtmp.http.port", parseInt(newText));
+        });
+        rtmpHttpPortField.layout().addWidget(rtmpHttpPortLabel);
+        rtmpHttpPortField.layout().addWidget(rtmpHttpPortInput);
+        serverRestartButton.setText("Restart Server");
+        serverRestartButton.addEventListener("clicked", this.css.start.bind(this.css));
+        advancedPage.layout().addWidget(modeField);
+        advancedPage.layout().addWidget(dnsPortField);
+        advancedPage.layout().addWidget(dnsSendToField);
+        advancedPage.layout().addWidget(rtmpPortField);
+        advancedPage.layout().addWidget(rtmpHttpField);
+        advancedPage.layout().addWidget(rtmpHttpPortField);
+        advancedPage.layout().addWidget(serverRestartButton);
         advancedPage.layout().addWidget(nodeMediaServerLink);
 
         pages.addWidget(homePage);
@@ -195,12 +270,16 @@ class CssGUI {
                 background: grey;
             }
 
-            #left_pane QListWidget QListWidgetItem {
-                background: red;
-            }
-
             #right_pane {
                 flex: 2;
+            }
+
+            #right_pane .advanced-form-field {
+                flex-direction: row;
+            }
+
+            #right_pane .advanced-form-field QLabel {
+                width: 200px;
             }
 
             #server_status {
@@ -208,115 +287,6 @@ class CssGUI {
             }
         `);
         
-        /*const label = new QT.QLabel();
-        label.setObjectName("mylabel");
-        label.setText("RTMP Server Status");
-        label.setInlineStyle("color: blue; text-decoration: underline");
-        label.addEventListener("clicked", () => {console.log("use open module")});
-
-        const dnsServerStartButton = new QT.QPushButton();
-        dnsServerStartButton.setText("Start DNS server");
-        const rtmpServerStartButton = new QT.QPushButton();
-        rtmpServerStartButton.setText("Start RTMP server");
-
-        const interfaceSelector = new QT.QComboBox();
-        const nets = networkInterfaces();
-        const results = Object.create(null); // Or just '{}', an empty object
-        for (const name of Object.keys(nets)) {
-            for (const net of nets[name]) {
-                const familyV4Value = typeof net.family === 'string' ? 'IPv4' : 4
-                if (net.family === familyV4Value && !net.internal) {
-                    if (!results[name]) {
-                        results[name] = [];
-                    }
-                    results[name].push(net.address);
-                }
-            }
-        }
-        for (let name in results) {
-            interfaceSelector.addItem(undefined, name + " (" + results[name] + ")", new QT.QVariant(results[name]));
-        }
-        this.css.setMainIP(interfaceSelector.itemData(interfaceSelector.currentIndex()).toString());
-        interfaceSelector.addEventListener('currentIndexChanged', (index) => {
-            this.css.setMainIP(interfaceSelector.itemData(index).toString());
-            this.css.restartDNS();
-        });
-
-        const tabWidget = new QT.QTabWidget();
-
-        const instructionsLayout = new QT.FlexLayout();
-        const instructionsTab = new QT.QWidget();
-        instructionsTab.setObjectName("instructions_tab");
-        instructionsTab.setLayout(instructionsLayout);
-        const instructionsImageLabel = new QT.QLabel();
-        const instructionsImage = new QT.QMovie();
-        instructionsImage.setFileName("instructions.gif");
-        instructionsImage.start();
-        instructionsImageLabel.setMovie(instructionsImage);
-
-        instructionsLayout.addWidget(instructionsImageLabel);
-
-        tabWidget.addTab(instructionsTab, new QT.QIcon(), "Instructions");
-
-        const checkStatusLayout = new QT.FlexLayout();
-        const checkStatusTab = new QT.QWidget();
-        checkStatusTab.setObjectName("checkstatus_tab");
-        checkStatusTab.setLayout(checkStatusLayout);
-        const dnsServerCheckButton = new QT.QPushButton();
-        dnsServerCheckButton.setText("Check DNS server status");
-        dnsServerCheckButton.addEventListener("clicked", () => {
-            this.css.checkDNSStatus((statusOk) => {
-                if (statusOk) {
-                    dnsServerCheckImage.load("green-circle-icon.png");
-                } else {
-                    dnsServerCheckImage.load("red-circle-icon.png");
-                }
-                dnsServerCheckLabel.setPixmap(dnsServerCheckImage);
-            });
-        });
-        const dnsServerCheckLabel = new QT.QLabel();
-        const dnsServerCheckImage = new QT.QPixmap();
-        dnsServerCheckImage.load("red-circle-icon.png");
-        dnsServerCheckLabel.setPixmap(dnsServerCheckImage);
-        dnsServerCheckLabel.setScaledContents(true);
-        dnsServerCheckLabel.setInlineStyle("width: 16px; height: 16px");
-
-        const rtmpServerCheckButton = new QT.QPushButton();
-        rtmpServerCheckButton.setText("Check RTMP server status");
-        rtmpServerCheckButton.addEventListener("clicked", () => {
-            this.css.checkRTMPStatus((statusOk) => {
-                if (statusOk) {
-                    rtmpServerCheckImage.load("green-circle-icon.png");
-                } else {
-                    rtmpServerCheckImage.load("red-circle-icon.png");
-                }
-                rtmpServerCheckLabel.setPixmap(rtmpServerCheckImage);
-            });
-        });
-        const rtmpServerCheckLabel = new QT.QLabel();
-        const rtmpServerCheckImage = new QT.QPixmap();
-        rtmpServerCheckImage.load("red-circle-icon.png");
-        rtmpServerCheckLabel.setPixmap(rtmpServerCheckImage);
-        rtmpServerCheckLabel.setScaledContents(true);
-        rtmpServerCheckLabel.setInlineStyle("width: 16px; height: 16px");
-
-        checkStatusLayout.addWidget(dnsServerCheckButton);
-        checkStatusLayout.addWidget(dnsServerCheckLabel);
-        checkStatusLayout.addWidget(rtmpServerCheckButton);
-        checkStatusLayout.addWidget(rtmpServerCheckLabel);
-
-        tabWidget.addTab(checkStatusTab, new QT.QIcon(), "Server Status");
-
-        this.rootLayout.addWidget(label);
-        this.rootLayout.addWidget(interfaceSelector);
-        this.rootLayout.addWidget(dnsServerStartButton);
-        this.rootLayout.addWidget(rtmpServerStartButton);
-        this.rootLayout.addWidget(tabWidget);
-
-        dnsServerStartButton.addEventListener("clicked", this.css.startDNS.bind(this.css));
-        rtmpServerStartButton.addEventListener("clicked", this.css.startRTMP.bind(this.css));
-
-        */
         this.win.show();
         global.win = this.win;
     }

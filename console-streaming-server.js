@@ -1,11 +1,6 @@
 const NodeMediaServer = require("node-media-server");
-const { Client: RtmpClient } = require('rtmp-client');
+const { Client: RtmpClient } = require("rtmp-client");
 const DnsProxyServer = require("dns-proxy-lib");
-
-let domains = [
-    "*.contribute.live-video.net",
-    "live*.twitch.tv"
-];
 
 class ConsoleStreamingServer {
     constructor(config) {
@@ -13,6 +8,10 @@ class ConsoleStreamingServer {
         this.config = config;
         this.dnsRunning = false;
         this.rtmpRunning = false;
+    }
+
+    getConfig() {
+        return this.config;
     }
 
     setMainIP(ip) {
@@ -28,7 +27,7 @@ class ConsoleStreamingServer {
         if (this.dnsRunning) {
             this.dnsProxyServer.stop();
         }
-        this.dnsConfig = { host: this.mainIP, domains: Object.fromEntries(domains.map(d => [d, this.mainIP])) };
+        this.dnsConfig = { host: this.config.get("dns.host"), port: this.config.get("dns.port"), domains: Object.fromEntries(this.config.get("dns.domains").map(d => [d, this.config.get("dns.sendTo")]))};
         this.dnsProxyServer = new DnsProxyServer(this.dnsConfig);
         try {
             this.dnsProxyServer.run();
@@ -38,22 +37,26 @@ class ConsoleStreamingServer {
         }
     }
 
-    restartDNS() {
+    /*restartDNS() {
         if (this.dnsRunning) {
             this.dnsProxyServer.stop();
-            this.dnsConfig = { domains: Object.fromEntries(domains.map(d => [d, mainIP])) };
+            this.dnsConfig = { host: this.config.dns.host, port: this.config.dns.port, domains: Object.fromEntries(this.config.dns.domains.map(d => [d, this.config.dns.sendTo]))};
             this.dnsProxyServer = new DnsProxyServer(this.dnsConfig);
             this.startDNS();
         }
-    }
+    }*/
 
     checkDNSStatus(callback) {
-        const { Resolver } = require("node:dns");
-        const resolver = new Resolver();
-        resolver.setServers([this.mainIP]);
-        resolver.resolve4(domains[0], (err, addresses) => {
-            callback(!err && addresses[0] == this.mainIP);
-        });
+        if (!this.config.get("dns.active")) {
+            callback("disabled");
+        } else {
+            const { Resolver } = require("node:dns");
+            const resolver = new Resolver();
+            resolver.setServers([this.mainIP]);
+            resolver.resolve4(this.config.get("dns.domains")[0], (err, addresses) => {
+                callback(!err && addresses[0] == this.config.get("dns.sendTo") ? "ok" : "ko");
+            });
+        }
     }
 
     startRTMP() {
@@ -64,20 +67,22 @@ class ConsoleStreamingServer {
         this.nmsConfig = {
             logType: 3,
             rtmp: {
-                port: 1935,
+                port: this.config.get("rtmp.port"),
                 chunk_size: 60000,
                 gop_cache: true,
                 ping: 30,
                 ping_timeout: 60
-            },
-            http: {
-                port: 8080,
-                allow_origin: "*"
             }
         };
+        if (this.config.get("rtmp.http.active")) {
+            this.nmsConfig.http = {
+                port: this.config.get("rtmp.http.port"),
+                allow_origin: "*"
+            }
+        }
         this.nodeMediaServer = new NodeMediaServer(this.nmsConfig);
         this.nodeMediaServer.on("postPublish", (id, streamPath, args) => {
-            console.log("Receiving stream", `id=${id} StreamPath=${StreamPath} args=${JSON.stringify(args)}`);
+            console.log("Receiving stream", `id=${id} StreamPath=${streamPath} args=${JSON.stringify(args)}`);
             // stream path looks like: /app/live_157929848_DWzeddUhYx6ST73aXI0YE3yO1vdy50
         });
       
@@ -90,38 +95,46 @@ class ConsoleStreamingServer {
     }
       
     checkRTMPStatus(callback) {
-        if (this.rc) {
-            this.rc.close();
+        if (!this.config.get("rtmp.active")) {
+            callback("disabled");
+        } else {
+            if (this.rc) {
+                this.rc.close();
+            }
+            this.rc = new RtmpClient(this.mainIP, 1935);
+            this.rc.connect()
+                .then(() => {this.rc.close(); callback("ok");})
+                .catch((err) => {callback("ko");});
         }
-        this.rc = new RtmpClient(this.mainIP, 1935);
-		this.rc.connect()
-            .then(() => {this.rc.close(); callback(true);})
-            .catch(() => {callback(false);});
     }
 
     start() {
         this.stop();
-        this.startDNS();
-        this.startRTMP();
+        if (this.config.get("dns.active")) {
+            this.startDNS();
+        }
+        if (this.config.get("rtmp.active")) {
+            this.startRTMP();
+        }
     }
 
     stop() {
-        if (this.dnsRunning) {
-            console.log('stopping DNS server');
+        if (this.config.get("dns.active") && this.dnsRunning) {
+            console.log("stopping DNS server");
             this.dnsProxyServer.stop();
             this.dnsRunning = false;
         }
-        if (this.rtmpRunning) {
-            console.log('stopping RTMP server');
+        if (this.config.get("rtmp.active") && this.rtmpRunning) {
+            console.log("stopping RTMP server");
             this.nodeMediaServer.stop();
             this.rtmpRunning = false;
         }
     }
 
     checkStatus(callback) {
-        this.checkDNSStatus((isDnsOk) => {
-            this.checkRTMPStatus((isRtmpOk) => {
-                callback(isDnsOk && isRtmpOk);
+        this.checkDNSStatus((dnsStatus) => {
+            this.checkRTMPStatus((rtmpStatus) => {
+                callback({dnsStatus, rtmpStatus});
             });
         });
     }
