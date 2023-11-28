@@ -1,6 +1,6 @@
 const NodeMediaServer = require("node-media-server");
 const { Client: RtmpClient } = require("rtmp-client");
-const DnsProxyServer = require("dns-proxy-lib");
+const DnsProxyServer = require("@aiorosdev/dns-proxy-lib");
 
 class ConsoleStreamingServer {
     constructor(config) {
@@ -101,7 +101,7 @@ class ConsoleStreamingServer {
             if (this.rc) {
                 this.rc.close();
             }
-            this.rc = new RtmpClient(this.mainIP, 1935);
+            this.rc = new RtmpClient(this.mainIP, this.config.get("rtmp.port"));
             this.rc.connect()
                 .then(() => {this.rc.close(); callback("ok");})
                 .catch((err) => {callback("ko");});

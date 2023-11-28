@@ -72,7 +72,7 @@ class CssGUI {
         serverStatus.setLayout(new QT.FlexLayout());
         const serverCheckLabelImage = new QT.QLabel();
         const serverCheckImage = new QT.QPixmap();
-        serverCheckImage.load("red-circle-icon.png");
+        serverCheckImage.load("assets/images/red-circle-icon.png");
         serverCheckLabelImage.setPixmap(serverCheckImage);
         serverCheckLabelImage.setScaledContents(true);
         serverCheckLabelImage.setInlineStyle("width: 16px; height: 16px");
@@ -83,12 +83,12 @@ class CssGUI {
         this.serverCheckInterval = setInterval(() => {
             this.css.checkStatus((status) => {
                 if (status.dnsStatus != "ko" && status.rtmpStatus != "ko" ) {
-                    serverCheckImage.load("green-circle-icon.png");
+                    serverCheckImage.load("assets/images/green-circle-icon.png");
                     serverCheckLabel.setText("Server Online");
                     serverStartButton.setDisabled(true);
                     serverStopButton.setDisabled(false);
                 } else {
-                    serverCheckImage.load("red-circle-icon.png");
+                    serverCheckImage.load("assets/images/red-circle-icon.png");
                     serverCheckLabel.setText("Server Offline");
                     serverStartButton.setDisabled(false);
                     serverStopButton.setDisabled(true);
@@ -114,7 +114,7 @@ class CssGUI {
         instructionsPage.setLayout(new QT.FlexLayout());
         const instructionsImageLabel = new QT.QLabel();
         const instructionsImage = new QT.QMovie();
-        instructionsImage.setFileName("instructions.gif");
+        instructionsImage.setFileName("assets/images/instructions.gif");
         instructionsImage.start();
         instructionsImageLabel.setMovie(instructionsImage);
         instructionsPage.layout().addWidget(instructionsImageLabel);

@@ -3,9 +3,13 @@
   "version": "1.0.0",
   "description": "",
   "main": "main.js",
+  "bin": {
+    "console-streaming-server": "main.js"
+  },
   "scripts": {
     "start": "qode main.js",
-    "debug": "qode --inspect main.js"
+    "debug": "qode --inspect main.js",
+    "build": "webpack"
   },
   "repository": {
     "type": "git",
@@ -18,12 +22,18 @@
   },
   "homepage": "https://github.com/Aioros/console-streaming-server#readme",
   "dependencies": {
+    "@aiorosdev/dns-proxy-lib": "^1.0.0",
     "@nodegui/nodegui": "^0.62.0",
     "conf": "^12.0.0",
-    "dns-proxy": "^1.1.0",
     "internal-ip": "^7.0.0",
     "node-media-server": "^2.6.2",
     "open": "^9.1.0",
     "rtmp-client": "^1.5.3"
+  },
+  "devDependencies": {
+    "@nodegui/packer": "^1.5.0",
+    "node-loader": "^2.0.0",
+    "webpack": "^5.89.0",
+    "webpack-cli": "^5.1.4"
   }
 }
