@@ -9,11 +9,12 @@
   "scripts": {
     "start": "qode main.js",
     "debug": "qode --inspect main.js",
-    "build": "npm run webpack && npm run distinstall && npm run nodeguipack && npm run copyassets",
     "webpack": "webpack",
     "distinstall": "cd dist && npm init -y && npm install express bufferutil utf-8-validate node-media-server",
     "nodeguipack": "npx nodegui-packer --pack ./dist",
-    "copyassets": "cpy assets deploy/win32/build/ConsoleStreamingServer"
+    "copyassets": "cpy assets deploy/win32/build/ConsoleStreamingServer",
+    "renameexe": "cd deploy/win32/build/ConsoleStreamingServer && node -e \"require('fs').rename('qode.exe', 'ConsoleStreamingServer.exe', () => {})\"",
+    "build": "npm run webpack && npm run distinstall && npm run nodeguipack && npm run copyassets && npm run renameexe"
   },
   "repository": {
     "type": "git",
@@ -31,7 +32,6 @@
     "conf": "^12.0.0",
     "internal-ip": "^7.0.0",
     "node-media-server": "^2.6.2",
-    "open": "^9.1.0",
     "rtmp-client": "^1.5.3"
   },
   "devDependencies": {
