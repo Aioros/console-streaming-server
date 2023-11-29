@@ -8,6 +8,8 @@ class ConsoleStreamingServer {
         this.config = config;
         this.dnsRunning = false;
         this.rtmpRunning = false;
+        this.streams = [];
+        this.streamsUpdatedCallbacks = [];
     }
 
     getConfig() {
@@ -20,6 +22,18 @@ class ConsoleStreamingServer {
 
     getMainIP() {
         return this.mainIP;
+    }
+
+    getRTMPServerBaseURL() {
+        return "rtmp://"+ this.config.get("dns.sendTo") + ":" + this.config.get("rtmp.port");
+    }
+
+    getStreams() {
+        return this.streams;
+    }
+
+    onStreamsUpdated(callback) {
+        this.streamsUpdatedCallbacks.push(callback);
     }
 
     startDNS() {
@@ -83,7 +97,18 @@ class ConsoleStreamingServer {
         this.nodeMediaServer = new NodeMediaServer(this.nmsConfig);
         this.nodeMediaServer.on("postPublish", (id, streamPath, args) => {
             console.log("Receiving stream", `id=${id} StreamPath=${streamPath} args=${JSON.stringify(args)}`);
+            this.streams.push(streamPath);
             // stream path looks like: /app/live_157929848_DWzeddUhYx6ST73aXI0YE3yO1vdy50
+            this.streamsUpdatedCallbacks.forEach(fn => {
+                fn(this.streams);
+            });
+        });
+        this.nodeMediaServer.on("donePublish", (id, streamPath, args) => {
+            console.log("Done with stream", `id=${id} StreamPath=${streamPath} args=${JSON.stringify(args)}`);
+            this.streams = this.streams.filter(s => s != streamPath);
+            this.streamsUpdatedCallbacks.forEach(fn => {
+                fn(this.streams);
+            });
         });
       
         try {
