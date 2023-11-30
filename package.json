@@ -11,7 +11,7 @@
     "debug": "qode --inspect main.js",
     "webpack": "webpack",
     "distinstall": "cd dist && npm init -y && npm install express bufferutil utf-8-validate node-media-server",
-    "nodeguipack": "npx nodegui-packer --pack ./dist",
+    "nodeguipack": "npx @aiorosdev/nodegui-packer --pack ./dist",
     "copyassets": "cpy assets deploy/win32/build/ConsoleStreamingServer",
     "renameexe": "cd deploy/win32/build/ConsoleStreamingServer && node -e \"require('fs').rename('qode.exe', 'ConsoleStreamingServer.exe', () => {})\"",
     "build": "npm run webpack && npm run distinstall && npm run nodeguipack && npm run copyassets && npm run renameexe"
@@ -35,7 +35,7 @@
     "rtmp-client": "^1.5.3"
   },
   "devDependencies": {
-    "@aiorosdev/nodegui-packer": "^1.5.1",
+    "@aiorosdev/nodegui-packer": "^1.5.2",
     "cpy-cli": "^5.0.0",
     "node-loader": "^2.0.0",
     "webpack": "^5.89.0",
