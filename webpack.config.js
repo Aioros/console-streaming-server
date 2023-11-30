@@ -5,7 +5,7 @@ module.exports = {
   entry: [
     path.join(__dirname, "main.js")
   ],
-  mode: "development",
+  mode: "production",
   target: "node",
   node: {
     __dirname: false,
