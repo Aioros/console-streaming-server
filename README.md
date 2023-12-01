@@ -1,3 +1,4 @@
+
 # Console Streaming Server
 
 Console Streaming Server is a simple server that hijacks your console's broadcast to Twitch and publishes it in your network, allowing you to process it with OBS or any other streaming tool before sending it to your favorite streaming platform.
@@ -45,8 +46,9 @@ For example, you might already have your own configurable DNS server, or you mig
 
 ### How do I use this on Linux?
 
-Yeah, I know, not the most Frequently Asked Question. If you are looking for an executable, I'm still working on it. I had some trouble figuring out all the dependencies needed to package and run a QT application, and unfortunately I'm not the most knowledgeable on the topic (plus, I don't have a Linux machine to work on yet). Any help is welcome though!
-In the meantime, you can still run the application normally in Node. You probably know the drill: make sure you installed Node.js on your system, clone the repository, npm install, npm start, and you should be up and running.
+Yeah, I know, not the most Frequently Asked Question. I am not knowledgeable enough to know exactly how to package a generic release for Linux. What I do know, is that the build chain should work, since I am able to build the project in an Ubuntu 22.04 VM. You should be able to do the same by running `npm run build`. The project uses Qt 6, so your mileage may vary on the libraries that you might need to install. For me, it was `libfuse2` (and `fuse` if your distro doesn't come with it), `libgl1-mesa-glx`, `libopeng10`, `libegl1`).
+
+But also, if building it is too much of a headache, you can still run the application normally in Node. You probably know the drill: make sure you installed Node.js on your system, clone the repository, `npm install`, `npm start`, and you should be up and running.
 
 # License
 
