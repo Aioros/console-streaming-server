@@ -1,8 +1,8 @@
 [Desktop Entry]
 Type=Application
-Name=Application
+Name=Console Streaming Server
 Exec=AppRun %F
 Icon=default
-Comment=Edit this default file
+#Comment=Edit this default file
 Terminal=true
 Categories=Utility;
