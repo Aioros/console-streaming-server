@@ -4,7 +4,7 @@ const DnsProxyServer = require("@aiorosdev/dns-proxy-lib");
 const io = require('socket.io')();
 
 console.log("config received: " + process.argv[3]);
-let config = JSON.parse(process.argv[3]);
+let config = JSON.parse(Buffer.from(process.argv[3], "base64").toString("ascii"));
 console.log(config);
 
 let dnsProxyServer = new DnsProxyServer(config);

@@ -44,7 +44,7 @@ class ConsoleStreamingServer {
         }
         this.dnsConfig = { host: this.config.get("dns.host"), port: this.config.get("dns.port"), domains: Object.fromEntries(this.config.get("dns.domains").map(d => [d, this.config.get("dns.sendTo")]))};
         
-        this.dnsProxyServer = new DnsServer(this.dnsConfig);//DnsProxyServer(this.dnsConfig);
+        this.dnsProxyServer = new DnsServer(this.dnsConfig);
         try {
             this.dnsProxyServer.run();
             this.dnsRunning = true;
