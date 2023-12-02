@@ -4,26 +4,29 @@ const { io } = require("socket.io-client");
 const fs = require("fs");
 const path = require("path");
 
-function getSocket() {
-    return io("http://127.0.0.1:3000");
-}
-
 class DnsServer {
     constructor(config) {
         this.config = config;
         this.inProcess = true;
         this.inProcessDNSServer = new DnsProxyServer(config);
+        this.socket = null;
+    }
+
+    getSocket() {
+        if (!this.socket) {
+            this.socket = io("http://127.0.0.1:3000");
+        }
+        return this.socket;
     }
 
     runSeparateProcess() {
-        console.log("exe exists: " + fs.existsSync("./dns-server-child.exe"));
     	console.log("Couldn't run DNS server. Root/administrator permissions might be needed, trying to request them for a child process DNS server.");
         // Find executable if available, otherwise run the node script
-        let executable = "node ./dns-server-child.js";
+        let executable = "node " + path.resolve(__dirname, "dns-server-child.js");
         if (process.platform == "win32" && fs.existsSync("./dns-server-child.exe")) {
-            executable = path.resolve(__dirname, "./dns-server-child.exe");
+            executable = path.resolve(__dirname, "dns-server-child.exe");
         } else if (fs.existsSync("./dns-server-child")) {
-            executable = path.resolve(__dirname, "./dns-server-child");
+            executable = path.resolve(__dirname, "dns-server-child");
         }
         if (process.platform == "win32") {
             executable = executable.replace(/\//g, "\\");
@@ -38,7 +41,7 @@ class DnsServer {
             }
 	    });
 	    setTimeout(() => {
-		    getSocket()?.emit("requestStart");
+		    this.getSocket()?.emit("request", {command: "start"}, (response) => {console.log("response: ", response)});
 	    }, 1000);
     }
 
@@ -55,7 +58,9 @@ class DnsServer {
         if (this.inProcess) {
             this.inProcessDNSServer.stop();
         } else {
-            getSocket()?.emit("requestStop");
+            this.getSocket()?.emit("request", {command: "stop"}, (response) => {
+                this.getSocket()?.disconnect();
+            });
         }
     }
 }

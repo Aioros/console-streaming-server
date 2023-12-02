@@ -129,10 +129,18 @@ class ConsoleStreamingServer {
     start() {
         this.stop();
         if (this.config.get("dns.active")) {
-            this.startDNS();
+            try {
+                this.startDNS();
+            } catch(ex) {
+                console.error(ex);
+            }
         }
         if (this.config.get("rtmp.active")) {
-            this.startRTMP();
+            try {
+                this.startRTMP();
+            } catch(ex) {
+                console.error(ex);
+            }
         }
     }
 
