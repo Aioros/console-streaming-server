@@ -3,9 +3,6 @@
   "version": "1.0.1",
   "description": "",
   "main": "main.js",
-  "bin": {
-    "console-streaming-server": "main.js"
-  },
   "scripts": {
     "start": "qode main.js",
     "debug": "qode --inspect main.js",
