@@ -84,11 +84,15 @@ class CssGUI {
                     serverCheckLabel.setText("Server Online");
                     serverStartButton.setDisabled(true);
                     serverStopButton.setDisabled(false);
+                    loadingStartMovie.stop();
+                    serverStartButton.setIcon(new QT.QIcon("assets/icons/start.png"));
                 } else {
                     serverCheckImage.load("assets/icons/status-ko.png");
                     serverCheckLabel.setText("Server Offline");
                     serverStartButton.setDisabled(false);
                     serverStopButton.setDisabled(true);
+                    loadingStopMovie.stop();
+                    serverStopButton.setIcon(new QT.QIcon("assets/icons/stop.png"));
                 }
                 serverCheckLabelImage.setPixmap(serverCheckImage);
             });
@@ -96,12 +100,30 @@ class CssGUI {
         const serverStartButton = new QT.QPushButton();
         serverStartButton.setText("   Start");
         serverStartButton.setIcon(new QT.QIcon("assets/icons/start.png"));
-        serverStartButton.addEventListener("clicked", this.css.start.bind(this.css));
+        let loadingStartMovie = new QT.QMovie();
+        loadingStartMovie.setFileName("assets/icons/loading.gif");
+        loadingStartMovie.addEventListener("frameChanged", () => {
+            serverStartButton.setIcon(new QT.QIcon(loadingStartMovie.currentPixmap()));
+        });
+        serverStartButton.addEventListener("clicked", () => {
+            this.css.start();
+            serverStartButton.setDisabled(true);
+            loadingStartMovie.start();
+        });
         const serverStopButton = new QT.QPushButton();
         serverStopButton.setText("   Stop");
         serverStopButton.setIcon(new QT.QIcon("assets/icons/stop.png"));
+        let loadingStopMovie = new QT.QMovie();
+        loadingStopMovie.setFileName("assets/icons/loading.gif");
+        loadingStopMovie.addEventListener("frameChanged", () => {
+            serverStopButton.setIcon(new QT.QIcon(loadingStopMovie.currentPixmap()));
+        });
         serverStopButton.setDisabled(true);
-        serverStopButton.addEventListener("clicked", this.css.stop.bind(this.css));
+        serverStopButton.addEventListener("clicked", () => {
+            this.css.stop();
+            serverStopButton.setDisabled(true);
+            loadingStopMovie.start();
+        });
         const homeText = new QT.QLabel();
         homeText.setObjectName("home_text");
         homeText.setText("Don't forget to set your console's primary DNS server as shown in the instructions tab!");
