@@ -2,6 +2,7 @@ const DnsProxyServer = require("@aiorosdev/dns-proxy-lib");
 const sudo = require("sudo-prompt");
 const { io } = require("socket.io-client");
 const fs = require("fs");
+const path = require("path");
 
 function getSocket() {
     return io("http://127.0.0.1:3000");
@@ -20,9 +21,9 @@ class DnsServer {
         // Find executable if available, otherwise run the node script
         let executable = "node ./dns-server-child.js";
         if (process.platform == "win32" && fs.existsSync("./dns-server-child.exe")) {
-            executable = "./dns-server-child.exe";
+            executable = path.resolve(__dirname, "./dns-server-child.exe");
         } else if (fs.existsSync("./dns-server-child")) {
-            executable = "./dns-server-child";
+            executable = path.resolve(__dirname, "./dns-server-child");
         }
         if (process.platform == "win32") {
             executable = executable.replace(/\//g, "\\");
