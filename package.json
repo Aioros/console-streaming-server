@@ -1,6 +1,6 @@
 {
   "name": "console-streaming-server",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "",
   "main": "main.js",
   "bin": {
@@ -37,7 +37,10 @@
     "conf": "^12.0.0",
     "internal-ip": "^7.0.0",
     "node-media-server": "^2.6.2",
-    "rtmp-client": "^1.5.3"
+    "rtmp-client": "^1.5.3",
+    "socket.io": "^4.7.2",
+    "socket.io-client": "^4.7.2",
+    "sudo-prompt": "^9.2.1"
   },
   "devDependencies": {
     "@aiorosdev/nodegui-packer": "^1.5.2",

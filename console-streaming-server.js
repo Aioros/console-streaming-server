@@ -1,6 +1,6 @@
+const DnsServer = require("./dns-server.js");
 const NodeMediaServer = require("node-media-server");
 const { Client: RtmpClient } = require("rtmp-client");
-const DnsProxyServer = require("@aiorosdev/dns-proxy-lib");
 
 class ConsoleStreamingServer {
     constructor(config) {
@@ -38,11 +38,13 @@ class ConsoleStreamingServer {
 
     startDNS() {
         console.log("starting DNS server");
+        
         if (this.dnsRunning) {
             this.dnsProxyServer.stop();
         }
         this.dnsConfig = { host: this.config.get("dns.host"), port: this.config.get("dns.port"), domains: Object.fromEntries(this.config.get("dns.domains").map(d => [d, this.config.get("dns.sendTo")]))};
-        this.dnsProxyServer = new DnsProxyServer(this.dnsConfig);
+        
+        this.dnsProxyServer = new DnsServer(this.dnsConfig);//DnsProxyServer(this.dnsConfig);
         try {
             this.dnsProxyServer.run();
             this.dnsRunning = true;
@@ -50,15 +52,6 @@ class ConsoleStreamingServer {
             throw ex;
         }
     }
-
-    /*restartDNS() {
-        if (this.dnsRunning) {
-            this.dnsProxyServer.stop();
-            this.dnsConfig = { host: this.config.dns.host, port: this.config.dns.port, domains: Object.fromEntries(this.config.dns.domains.map(d => [d, this.config.dns.sendTo]))};
-            this.dnsProxyServer = new DnsProxyServer(this.dnsConfig);
-            this.startDNS();
-        }
-    }*/
 
     checkDNSStatus(callback) {
         if (!this.config.get("dns.active")) {
