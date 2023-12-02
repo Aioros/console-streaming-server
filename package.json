@@ -1,6 +1,6 @@
 {
   "name": "console-streaming-server",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "description": "",
   "main": "main.js",
   "scripts": {
@@ -10,14 +10,15 @@
     "webpack": "webpack",
     "distinstall": "cd dist && npm init -y && npm install express bufferutil utf-8-validate node-media-server",
     "pkgdns": "npx --yes pkg -t node18 ./dns-server-child.js --out-path ./dist",
-    "nodeguipack": "npx @aiorosdev/nodegui-packer --pack ./dist",
+    "nodeguipackwin32": "npx @aiorosdev/nodegui-packer --pack ./dist",
+    "nodeguipacklinux": "npx @aiorosdev/nodegui-packer --pack ./dist --no-appimage",
     "copyassetswin32": "cpy assets ./dist/",
     "copyassetslinux": "cpy assets ./dist/",
     "renamewin32": "cd deploy/win32/build/ConsoleStreamingServer && node -e \"require('fs').rename('qode.exe', 'ConsoleStreamingServer.exe', () => {})\"",
     "moveqttodist": "cd deploy/win32/build/ConsoleStreamingServer && node -e \"const fs = require('fs'); fs.readdirSync('.').filter((file) => file.startsWith('Qt') && file.endsWith('.dll')).forEach((dll) => { fs.rename(dll, 'dist/'+dll, () => {}) });\"",
     "renamelinux": "cd deploy/linux/build/ConsoleStreamingServer && node -e \"require('fs').rename('AppRun', 'ConsoleStreamingServer', () => {})\"",
-    "build:win32": "npm run webpack && npm run distinstall && npm run pkgdns && npm run copyassetswin32 && npm run nodeguipack && npm run moveqttodist && npm run renamewin32",
-    "build:linux": "npm run webpack && npm run distinstall && npm run pkgdns && npm run copyassetslinux && npm run nodeguipack && npm run renamelinux"
+    "build:win32": "npm run webpack && npm run distinstall && npm run pkgdns && npm run copyassetswin32 && npm run nodeguipackwin32 && npm run moveqttodist && npm run renamewin32",
+    "build:linux": "npm run webpack && npm run distinstall && npm run pkgdns && npm run copyassetslinux && npm run nodeguipacklinux && npm run renamelinux"
   },
   "repository": {
     "type": "git",
@@ -41,7 +42,7 @@
     "sudo-prompt": "^9.2.1"
   },
   "devDependencies": {
-    "@aiorosdev/nodegui-packer": "^1.5.2",
+    "@aiorosdev/nodegui-packer": "^1.5.6",
     "cpy-cli": "^5.0.0",
     "node-loader": "^2.0.0",
     "run-script-os": "^1.1.6",
