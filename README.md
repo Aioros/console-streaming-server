@@ -43,9 +43,9 @@ No, you can pick and choose the parts that you need. In the Advanced tab, you ca
 
 For example, you might already have your own configurable DNS server, or you might already have your own RTMP server. You can run just the missing piece and configure it to interact with your existing servers. Or you could run DNS Server Only on one device and RTMP Server Only on another.
 
-### How do I use this on Linux/MacOS?
+### How do I use this on Linux/macOS?
 
-Yeah, I know, not the most Frequently Asked Question. I am not knowledgeable enough to know exactly how to package a generic release for Linux or MacOS. What I do know, is that the Linux build chain should work, since I am able to build the project in an Ubuntu 22.04 VM. You should be able to do the same by running `npm install` and `npm run build`. The project uses Qt 6, so your mileage may vary on the libraries that you might need to install. For me, it was `libgl1-mesa-glx`, `libopeng10`, `libegl1`. I'll start working on also having a basic working MacOS build chain soon.
+Yeah, I know, not the most Frequently Asked Question. I am not knowledgeable enough to know exactly how to package a generic release for Linux or macOS. What I do know, is that the build chain should work, for both, since I am able to build the project on macOS Monterey and on Ubuntu 22.04. You should be able to do the same by running `npm install` and `npm run build`. The project uses Qt 6, so your mileage may vary on the libraries that you might need to install. For me, on Ubuntu, it was `libgl1-mesa-glx`, `libopeng10`, `libegl1`.
 
 But also, if building it is too much of a headache, you can still run the application normally in Node. You probably know the drill: make sure you installed Node.js on your system, clone the repository, `npm install`, `npm start`, and you should be up and running.
 
