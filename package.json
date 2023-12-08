@@ -1,6 +1,6 @@
 {
   "name": "console-streaming-server",
-  "version": "1.1.1",
+  "version": "1.2.0",
   "description": "",
   "main": "main.js",
   "scripts": {
@@ -13,19 +13,23 @@
     "nodeguipack": "npx @aiorosdev/nodegui-packer --pack ./dist",
     "nodeguipacklinux": "npx @aiorosdev/nodegui-packer --pack ./dist --no-appimage",
     "copyassets": "cpy assets ./dist/",
+    "modulelicenses": "node ./license-packager.js",
     "renamewin32": "cd deploy/win32/build/ConsoleStreamingServer && node -e \"require('fs').rename('qode.exe', 'ConsoleStreamingServer.exe', () => {})\"",
     "moveqttodist": "cd deploy/win32/build/ConsoleStreamingServer && node -e \"const fs = require('fs'); fs.readdirSync('.').filter((file) => file.startsWith('Qt') && file.endsWith('.dll')).forEach((dll) => { fs.rename(dll, 'dist/'+dll, () => {}) });\"",
     "renamelinux": "cd deploy/linux/build/ConsoleStreamingServer && node -e \"require('fs').rename('AppRun', 'ConsoleStreamingServer', () => {})\"",
-    "build:win32": "npm run webpack && npm run distinstall && npm run pkgdns && npm run copyassets && npm run nodeguipack && npm run moveqttodist && npm run renamewin32",
-    "build:linux": "npm run webpack && npm run distinstall && npm run pkgdns && npm run copyassets && npm run nodeguipacklinux && npm run renamelinux",
-    "build:darwin": "npm run webpack && npm run distinstall && npm run pkgdns && npm run copyassets && npm run nodeguipack"
+    "licensewin32": "cpy COPYING ./deploy/win32/build/ConsoleStreamingServer",
+    "licenselinux": "cpy COPYING ./deploy/linux/build/ConsoleStreamingServer",
+    "licensedarwin": "cpy COPYING ./deploy/darwin/build/ConsoleStreamingServer",
+    "build:win32": "npm run webpack && npm run distinstall && npm run modulelicenses && npm run pkgdns && npm run copyassets && npm run nodeguipack && npm run moveqttodist && npm run renamewin32 && npm run licensewin32",
+    "build:linux": "npm run webpack && npm run distinstall && npm run modulelicenses && npm run copyassets && npm run nodeguipacklinux && npm run renamelinux && npm run licenselinux",
+    "build:darwin": "npm run webpack && npm run distinstall && npm run modulelicenses && npm run copyassets && npm run nodeguipack && npm run licensedarwin"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Aioros/console-streaming-server.git"
   },
   "author": "Aioros",
-  "license": "MIT",
+  "license": "GPL-3.0-or-later",
   "bugs": {
     "url": "https://github.com/Aioros/console-streaming-server/issues"
   },
@@ -44,6 +48,8 @@
   "devDependencies": {
     "@aiorosdev/nodegui-packer": "^1.5.6",
     "cpy-cli": "^5.0.0",
+    "fs-extra": "^11.2.0",
+    "license-checker": "^25.0.1",
     "node-loader": "^2.0.0",
     "run-script-os": "^1.1.6",
     "webpack": "^5.89.0",
