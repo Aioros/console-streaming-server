@@ -15,6 +15,11 @@ They can keep the simplicity of just starting the stream from their console with
 
 Console Streaming Server is made of two core parts, a DNS server and a RTMP server. **The main thing that you need to do is change your console's Primary DNS** to the IP address of the device running this application. At that point, when the console tries to stream to Twitch, the DNS part will "trick" it into sending the stream to the RTMP part. The stream is then hosted on your network, and you are free to add it as a Media Scene in OBS, restream it, or do whatever you want with it.
 
+So you can just grab the [latest release](https://github.com/Aioros/console-streaming-server/releases/latest), extract the zip file wherever you prefer on your computer, run it and start the server. Once you set up the console's DNS, you can just start streaming to Twitch as usual, except that instead it will go to your new server. You will see the active stream URL listed in the application home page. If you want to add it as a source to an OBS scene (I imagine that's the most likely use case), you just need to add a Media Source with:
+- Local File: Off
+- Input: the stream link from the server's home page (it will be something like `rtmp://<youripaddress>/app/<yourstreamkey>`)
+- Input Format: rtmp
+
 ## Isn't this what LightStream and Streamlabs do?
 
 Pretty much, yes. Using a professional cloud service has the advantage of not requiring a PC on your part, but you also have less flexibility and less control over your stream. Having it in-network allows you to use your favorite streaming software, send it to whatever platform you want, or even just stream for clients in your home directly from your console. Also, it's free.
@@ -45,9 +50,9 @@ For example, you might already have your own configurable DNS server, or you mig
 
 ### How do I use this on Linux/macOS?
 
-Yeah, I know, not the most Frequently Asked Question. I am not knowledgeable enough to know exactly how to package a generic release for Linux or macOS. What I do know, is that the build chain should work, for both, since I am able to build the project on macOS Monterey and on Ubuntu 22.04. You should be able to do the same by running `npm install` and `npm run build`. The project uses Qt 6, so your mileage may vary on the libraries that you might need to install. For me, on Ubuntu, it was `libgl1-mesa-glx`, `libopeng10`, `libegl1`.
+Yeah, I know, not the most Frequently Asked Question. I do not have packages ready for Linux distributions or macOS yet, but the build chain should work for both, since I am able to build the project on macOS Monterey and on Ubuntu 22.04. You should be able to do the same by running `npm install` and `npm run build`. The project uses Qt 6, so your mileage may vary on the libraries that you might need to install. For me, on Ubuntu, it was `libgl1-mesa-glx`, `libopeng10`, `libegl1`.
 
-But also, if building it is too much of a headache, you can still run the application normally in Node. You probably know the drill: make sure you installed Node.js on your system, clone the repository, `npm install`, `npm start`, and you should be up and running.
+But also, if building it is too much of a headache, you can still run the application normally in Node.js. You probably know the drill: make sure you installed Node.js on your system, clone the repository, `npm install`, `npm start`, and you should be up and running.
 
 # License
 
