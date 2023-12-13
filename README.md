@@ -50,7 +50,11 @@ For example, you might already have your own configurable DNS server, or you mig
 
 ### How do I use this on Linux/macOS?
 
-Yeah, I know, not the most Frequently Asked Question. I do not have packages ready for Linux distributions or macOS yet, but the build chain should work for both, since I am able to build the project on macOS Monterey and on Ubuntu 22.04. You should be able to do the same by running `npm install` and `npm run build`. The project uses Qt 6, so your mileage may vary on the libraries that you might need to install. For me, on Ubuntu, it was `libgl1-mesa-glx`, `libopeng10`, `libegl1`.
+Yeah, I know, not the most Frequently Asked Question. I do not have packages ready for Linux distributions or macOS yet, but the build chain should work for both, since I am able to build the project on macOS Monterey and on Ubuntu 22.04. You should be able to do the same by running `npm install` and `npm run build`. The project uses Qt 6, so your mileage may vary on the libraries that you might need to install. For me, on Ubuntu 22.04, it was:
+- `fuse` (if not already installed) and `libfuse2` (these are only needed for the build process, not necessary to run the app)
+- `libgl1-mesa-glx`
+- `libopengl0`
+- `libegl1`
 
 But also, if building it is too much of a headache, you can still run the application normally in Node.js. You probably know the drill: make sure you installed Node.js on your system, clone the repository, `npm install`, `npm start`, and you should be up and running.
 
