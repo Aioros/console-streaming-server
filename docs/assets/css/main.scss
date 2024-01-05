@@ -1,0 +1,22 @@
+---
+# Only the main Sass file needs front matter (the dashes are enough)
+search: false
+---
+
+@charset "utf-8";
+
+@import "minimal-mistakes/skins/{{ site.minimal_mistakes_skin | default: 'default' }}"; // skin
+@import "minimal-mistakes"; // main partials
+
+.page__hero--overlay {
+    margin-bottom: 0;
+}
+
+.page__hero--overlay .page__title, .page__hero--overlay .page__meta, .page__hero--overlay .comment__date, .page__hero--overlay .page__lead, .page__hero--overlay .btn {
+    color: #fff;
+    text-shadow: 1px 1px 4px rgba(0,0,0,0.9);
+}
+
+#main {
+    margin-top: 2em;
+}

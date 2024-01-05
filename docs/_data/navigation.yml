@@ -1,0 +1,12 @@
+# main links
+main:
+  - title: "Instructions"
+    url: /instructions/
+  - title: "Restream"
+    url: /restream/
+  - title: "Tech & Support"
+    url: /support/
+  - title: "F.A.Q."
+    url: /faq/
+  # - title: "Sitemap"
+  #   url: /sitemap/
