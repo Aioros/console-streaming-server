@@ -1,6 +1,6 @@
 # Console Streaming Server
 
-Console Streaming Server is a simple server that hijacks your console's broadcast to Twitch and publishes it in your network, allowing you to process it with OBS or any other streaming tool before sending it to your favorite streaming platform.
+[Console Streaming Server](https://consolestreamingserver.net) is a simple server that hijacks your console's broadcast to Twitch and publishes it in your network, allowing you to process it with OBS or any other streaming tool before sending it to your favorite streaming platform.
 
 ## Who would need this?
 
