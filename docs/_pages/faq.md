@@ -10,7 +10,7 @@ At the moment, Twitch is the only supported service *on the console's end*. This
 
 ### Does this automatically restream to my favorite platform?
 
-No, Console Media Server only receives the stream from the console and hosts it on your device. To actually send it to Twitch or any other service you would need your own application, like [OBS](https://obsproject.com/) or similar.
+No, Console Streaming Server only receives the stream from the console and hosts it on your device. To actually send it to Twitch or any other service you would need your own application, like [OBS](https://obsproject.com/) or similar.
 
 ### I changed my Primary DNS as instructed and now my console can't connect to anything!
 
