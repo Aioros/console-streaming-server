@@ -14,7 +14,7 @@ No, Console Streaming Server only receives the stream from the console and hosts
 
 ### I changed my Primary DNS as instructed and now my console can't connect to anything!
 
-You should choose a valid Secondary DNS too. If you don't, your console will not be able to reach anything when Console Media Server is off. Recommended choices for Secondary DNS are:
+You should choose a valid Secondary DNS too. If you don't, your console will not be able to reach anything when Console Streaming Server is off. Recommended choices for Secondary DNS are:
 
 - the original Primary DNS
 - your default gateway (commonly your router's IP address, like 192.168.1.1)

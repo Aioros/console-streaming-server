@@ -177,7 +177,7 @@ class CssGUI {
             <p>From there, you're free to do whatever you want with your stream. If you use OBS, for example, you can copy the stream URL from the home page and add it to your scene as a Media Source (see below for <a href="#obs">OBS-specific instructions</a>).
             You can then alter your scene to your liking, add your favorite overlays, and restream to Twitch or anywhere you want.</p>
             <h1>How it works</h1>
-            <p>Console Media Server is made of two core parts: a DNS server and an RTMP server. When a console tries to stream to Twitch, it tries to connect to what is called an RTMP ingest server and send it an RTMP stream.</p>
+            <p>Console Streaming Server is made of two core parts: a DNS server and an RTMP server. When a console tries to stream to Twitch, it tries to connect to what is called an RTMP ingest server and send it an RTMP stream.</p>
             <p>In order to do that, it makes a DNS request to get the IP address of the ingest server. By changing the primary DNS of the console, this request gets processed by a small, custom DNS server that replaces that IP with your own.</p>
             <p>The stream from the console is then received by the custom RTMP server, and is available in your network for any kind of processing.</p>
             <p>You can also choose to run only the DNS part or the RTMP part (see <a href="#advanced">Advanced Setup</a> below). This can be useful if you already have a DNS or RTMP server, or if you want to run them in separate machines.</p>
@@ -186,13 +186,13 @@ class CssGUI {
             In that case, you would run the application on both machines, selecting "DNS Server Only" on the former, and "RTMP Server Only" on the latter. When you choose "DNS Only", make sure to also indicate the IP address of the separate RTMP server.<br>
             The network setup on the console would not change: you would still only need to point the Primary DNS to wherever the DNS server is running.</p>
             <h1 id="obs">OBS Instructions</h1>
-            <p>Once everything is setup and Console Media Server receives a stream, you will see a link in the home page. If you want to add the stream to a scene in OBS, you can create a new Media Source with the following settings:</p>
+            <p>Once everything is setup and Console Streaming Server receives a stream, you will see a link in the home page. If you want to add the stream to a scene in OBS, you can create a new Media Source with the following settings:</p>
             <ul><li>Local File: Off</li>
             <li>Input: the stream link from the server's home page (it will be something like <i>rtmp://&lt;youripaddress&gt;/app/&lt;yourstreamkey&gt;</i>)</li>
             <li>Input Format: rtmp</li></ul>
             <h1>FAQ</h1>
             <h2>What about every other service beside Twitch?</h2>
-            <p>At the moment, Twitch is the only supported streaming service, since it's easily the most used. But this doesn't mean that you can only use Console Media Server to stream to Twitch! Instead, it means that the "trick" only works
+            <p>At the moment, Twitch is the only supported streaming service, since it's easily the most used. But this doesn't mean that you can only use Console Streaming Server to stream to Twitch! Instead, it means that the "trick" only works
             if you choose Twitch when you start streaming from the console, but once it's captured you can use your tools to restream it wherever you want (but other built-in console integrations, like chat messages and viewers count, will not work).</p>
         `);
 

@@ -9,7 +9,7 @@ If you are a developer and you want to contribute, feel free to fork the project
 
 ## Issues
 
-If you are having trouble with Console Media Server, definitely take a look at the [Frequently Asked Questions]({{ "/faq/" | relative_url }}) first. If that doesn't help, please open a new issue [on GitHub](https://github.com/Aioros/console-streaming-server/issues).
+If you are having trouble with Console Streaming Server, definitely take a look at the [Frequently Asked Questions]({{ "/faq/" | relative_url }}) first. If that doesn't help, please open a new issue [on GitHub](https://github.com/Aioros/console-streaming-server/issues).
 
 ## How it works
 
