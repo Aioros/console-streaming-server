@@ -1,6 +1,6 @@
 {
   "name": "console-streaming-server",
-  "version": "1.2.0",
+  "version": "1.2.2",
   "description": "",
   "main": "main.js",
   "scripts": {
@@ -21,8 +21,8 @@
     "licenselinux": "cpy COPYING ./deploy/linux/build/ConsoleStreamingServer",
     "licensedarwin": "cpy COPYING ./deploy/darwin/build/ConsoleStreamingServer",
     "build:win32": "npm run webpack && npm run distinstall && npm run modulelicenses && npm run pkgdns && npm run copyassets && npm run nodeguipack && npm run moveqttodist && npm run renamewin32 && npm run licensewin32",
-    "build:linux": "npm run webpack && npm run distinstall && npm run modulelicenses && npm run copyassets && npm run nodeguipacklinux && npm run renamelinux && npm run licenselinux",
-    "build:darwin": "npm run webpack && npm run distinstall && npm run modulelicenses && npm run copyassets && npm run nodeguipack && npm run licensedarwin"
+    "build:linux": "npm run webpack && npm run distinstall && npm run modulelicenses && npm run pkgdns && npm run copyassets && npm run nodeguipacklinux && npm run renamelinux && npm run licenselinux",
+    "build:darwin": "npm run webpack && npm run distinstall && npm run modulelicenses && npm run pkgdns && npm run copyassets && npm run nodeguipack && npm run licensedarwin"
   },
   "repository": {
     "type": "git",

@@ -22,7 +22,7 @@ class DnsServer {
     runSeparateProcess() {
     	console.log("Couldn't run DNS server. Root/administrator permissions might be needed, trying to request them for a child process DNS server.");
         // Find executable if available, otherwise run the node script
-        let executable = "node " + path.resolve(__dirname, "dns-server-child.js");
+        let executable = process.execPath + " " + path.resolve(__dirname, "dns-server-child.js");
         if (process.platform == "win32" && fs.existsSync("./dns-server-child.exe")) {
             executable = path.resolve(__dirname, "dns-server-child.exe");
         } else if (fs.existsSync("./dns-server-child")) {
