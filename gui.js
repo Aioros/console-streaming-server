@@ -26,6 +26,169 @@ class CssGUI {
         });
     }
 
+    createDeviceDialog(deviceObj, show = false) {
+        if (!this.deviceDialog) {
+            this.deviceDialog = new QT.QDialog();
+            this.deviceDialog.setObjectName("device_dialog");
+            this.deviceDialog.setParent(this.win);
+            this.deviceDialog.setWindowFlag(QT.WindowType.Dialog, true);
+            this.deviceDialog.setWindowTitle("Edit Device");
+            this.deviceDialog.setModal(true);
+            this.deviceDialog.setLayout(new QT.FlexLayout());
+
+            this.deviceDialog.deviceIcon = new QT.QLabel();
+            this.deviceDialog.deviceIcon.setObjectName("device_icon_label");
+            this.deviceDialog.deviceIcon.pixMap = new QT.QPixmap();
+            this.deviceDialog.deviceIcon.pixMap.load(`assets/icons/device-type-generic.png`);
+            this.deviceDialog.deviceIcon.setPixmap(this.deviceDialog.deviceIcon.pixMap);
+            this.deviceDialog.deviceIcon.setScaledContents(true);
+
+            this.deviceDialog.deviceTitleLabel = new QT.QLabel();
+            this.deviceDialog.deviceTitleLabel.setText("Title");
+            this.deviceDialog.deviceTitle = new QT.QLineEdit();
+            this.deviceDialog.deviceTitleField = new QT.QWidget();
+            this.deviceDialog.deviceTitleField.setLayout(new QT.FlexLayout());
+            this.deviceDialog.deviceTitleField.setProperty("class", "dialog-field");
+            this.deviceDialog.deviceTitleField.layout().addWidget(this.deviceDialog.deviceTitleLabel);
+            this.deviceDialog.deviceTitleField.layout().addWidget(this.deviceDialog.deviceTitle);
+
+            this.deviceDialog.deviceTypeLabel = new QT.QLabel();
+            this.deviceDialog.deviceTypeLabel.setText("Type");
+            this.deviceDialog.deviceType = new QT.QComboBox();
+            this.deviceDialog.deviceType.addItem(undefined, "Generic", new QT.QVariant("generic"));
+            this.deviceDialog.deviceType.addItem(undefined, "PlayStation", new QT.QVariant("playstation"));
+            this.deviceDialog.deviceType.addItem(undefined, "Xbox", new QT.QVariant("xbox"));
+            this.deviceDialog.deviceType.addEventListener("currentIndexChanged", (index) => {
+                this.deviceDialog.deviceIcon.pixMap.load(`assets/icons/device-type-${this.deviceDialog.deviceType.itemData(index).toString()}.png`);
+                this.deviceDialog.deviceIcon.setPixmap(this.deviceDialog.deviceIcon.pixMap);
+            });
+            this.deviceDialog.deviceTypeField = new QT.QWidget();
+            this.deviceDialog.deviceTypeField.setLayout(new QT.FlexLayout());
+            this.deviceDialog.deviceTypeField.setProperty("class", "dialog-field");
+            this.deviceDialog.deviceTypeField.layout().addWidget(this.deviceDialog.deviceTypeLabel);
+            this.deviceDialog.deviceTypeField.layout().addWidget(this.deviceDialog.deviceType);
+
+            this.deviceDialog.deviceMAC = new QT.QLabel();
+            this.deviceDialog.deviceIP = new QT.QLabel();
+
+            this.deviceDialog.okButton = new QT.QPushButton();
+            this.deviceDialog.okButton.setText("Ok");
+            this.deviceDialog.okButton.addEventListener("clicked", () => {
+                if (this.deviceDialog.deviceId) {
+                    this.css.config.set({
+                        [`devices.${this.deviceDialog.deviceId}.title`]: this.deviceDialog.deviceTitle.text(),
+                        [`devices.${this.deviceDialog.deviceId}.type`]: this.deviceDialog.deviceType.itemData(this.deviceDialog.deviceType.currentIndex()).toString()
+                    });
+                }
+                this.deviceDialog.accept();
+            });
+            this.deviceDialog.okButton.setDefault(true);
+            this.deviceDialog.cancelButton = new QT.QPushButton();
+            this.deviceDialog.cancelButton.setText("Cancel");
+            this.deviceDialog.cancelButton.setAutoDefault(false);
+            this.deviceDialog.cancelButton.addEventListener("clicked", () => {this.deviceDialog.reject();});
+            this.deviceDialog.buttonsRow = new QT.QWidget();
+            this.deviceDialog.buttonsRow.setLayout(new QT.FlexLayout());
+            this.deviceDialog.buttonsRow.setProperty("class", "buttons-row");
+            this.deviceDialog.buttonsRow.layout().addWidget(this.deviceDialog.okButton);
+            this.deviceDialog.buttonsRow.layout().addWidget(this.deviceDialog.cancelButton);
+
+            this.deviceDialog.layout().addWidget(this.deviceDialog.deviceIcon);
+            this.deviceDialog.layout().addWidget(this.deviceDialog.deviceTitleField);
+            this.deviceDialog.layout().addWidget(this.deviceDialog.deviceTypeField);
+            this.deviceDialog.layout().addWidget(this.deviceDialog.deviceMAC);
+            this.deviceDialog.layout().addWidget(this.deviceDialog.deviceIP);
+            this.deviceDialog.layout().addWidget(this.deviceDialog.buttonsRow);
+
+            this.deviceDialog.setStyleSheet(
+                `
+                #device_dialog {
+                    padding: 10px;
+                    width: 300px;
+                    height: 250px;
+                }
+                #device_icon_label {
+                    width: 140px;
+                    height: 100px;
+                    margin-left: 40px;
+                }
+                .dialog-field {
+                    flex-direction: row;
+                    margin-bottom: 4px;
+                }
+                .dialog-field QLabel {
+                    width: 50px;
+                }
+                .dialog-field QLineEdit {
+                    width: 200px;
+                }
+                .buttons-row {
+                    margin-top: 20px;
+                    flex-direction: row;
+                }
+                `
+            );
+        }
+        if (deviceObj) {
+            let device = Object.values(deviceObj)[0];
+            device.mac = Object.keys(deviceObj)[0];
+            this.deviceDialog.deviceId = device.mac;
+            this.deviceDialog.deviceIcon.pixMap.load(`assets/icons/device-type-${device.type}.png`);
+            this.deviceDialog.deviceTitle.setText(device.title);
+            for (let i=0; i<this.deviceDialog.deviceType.count(); i++) {
+                if (this.deviceDialog.deviceType.itemData(i).toString() == device.type) {
+                    this.deviceDialog.deviceType.setCurrentIndex(i);
+                    break;
+                }
+            }
+            this.deviceDialog.deviceType.setCurrentText(device.type);
+            this.deviceDialog.deviceMAC.setText("MAC Address: " + device.mac);
+            this.deviceDialog.deviceIP.setText("IP: " + device.ip);
+        }
+        
+        if (show) {
+            this.deviceDialog.show();
+        }
+    }
+
+    refreshDevices(devices, deviceList) {
+        deviceList.children().filter(c => c.type == "widget").forEach(c => {
+            deviceList.layout().removeWidget(c);
+            c.setParent(null);
+        });
+        for (let mac in devices) {
+            let deviceItem = new QT.QWidget();
+            deviceItem.setLayout(new QT.FlexLayout());
+            deviceItem.setProperty("class", "device-item");
+            let deviceLabels = new QT.QWidget();
+            deviceLabels.setLayout(new QT.FlexLayout());
+            deviceLabels.setProperty("class", "device-labels");
+            let deviceTitle = new QT.QLabel();
+            deviceTitle.setText(devices[mac].title);
+            deviceTitle.setProperty("class", "device-title");
+            let deviceMAC = new QT.QLabel();
+            deviceMAC.setText("MAC address: " + mac);
+            let deviceIP = new QT.QLabel();
+            deviceIP.setText("IP: " + devices[mac].ip);
+            let deviceLastSeen = new QT.QLabel();
+            deviceLastSeen.setText("Last seen on: " + new Date(devices[mac].lastMessageReceived).toString());
+            let deviceType = new QT.QPushButton();
+            deviceType.setIcon(new QT.QIcon(`assets/icons/device-type-${devices[mac].type}.png`));
+            deviceType.setIconSize(new QT.QSize(48, 48));
+            deviceType.addEventListener("clicked", () => {
+                this.createDeviceDialog({[mac]: devices[mac]}, true);
+            });
+            deviceItem.layout().addWidget(deviceType);
+            deviceLabels.layout().addWidget(deviceTitle);
+            deviceLabels.layout().addWidget(deviceMAC);
+            deviceLabels.layout().addWidget(deviceIP);
+            deviceLabels.layout().addWidget(deviceLastSeen);
+            deviceItem.layout().addWidget(deviceLabels);
+
+            deviceList.layout().addWidget(deviceItem);
+        }
+    }
+
     start() {
 
         this.createMainWindow();
@@ -47,6 +210,9 @@ class CssGUI {
         const instructionsTab = new QT.QListWidgetItem("Instructions")
         instructionsTab.setIcon(new QT.QIcon("assets/icons/instructions.png"));
         tabs.addItem(instructionsTab);
+        const devicesTab = new QT.QListWidgetItem("Devices")
+        devicesTab.setIcon(new QT.QIcon("assets/icons/instructions.png"));
+        tabs.addItem(devicesTab);
         const advancedTab = new QT.QListWidgetItem("Advanced");
         advancedTab.setIcon(new QT.QIcon("assets/icons/advanced.png"));
         tabs.addItem(advancedTab);
@@ -202,10 +368,22 @@ class CssGUI {
         instructionsImage.start();
         instructionsImageLabel.setMovie(instructionsImage);
         instructionsPage.layout().addWidget(tb);
+
+        const devicesPage = new QT.QWidget();
+        devicesPage.setObjectName("devices");
+        devicesPage.setLayout(new QT.FlexLayout());
+        const deviceList = new QT.QWidget();
+        deviceList.setObjectName("device_list");
+        deviceList.setLayout(new QT.FlexLayout());
+        this.refreshDevices(this.css.config.get("devices"), deviceList);
+        this.css.config.onDidChange("devices", (devices) => {
+            this.refreshDevices(devices, deviceList);
+        });
+        devicesPage.layout().addWidget(deviceList);
         
         const advancedPage = new QT.QWidget();
         advancedPage.setObjectName("advanced");
-        advancedPage.setLayout(new QT.FlexLayout);
+        advancedPage.setLayout(new QT.FlexLayout());
         const nodeMediaServerLink = new QT.QLabel();
         nodeMediaServerLink.setTextFormat(QT.TextFormat.RichText);
         nodeMediaServerLink.setTextInteractionFlags(QT.TextInteractionFlag.TextBrowserInteraction);
@@ -315,6 +493,7 @@ class CssGUI {
 
         pages.addWidget(homePage);
         pages.addWidget(instructionsPage);
+        pages.addWidget(devicesPage);
         pages.addWidget(advancedPage);
 
         tabs.addEventListener("currentTextChanged", (tabName) => {
@@ -325,8 +504,11 @@ class CssGUI {
                 case "Instructions":
                     pages.setCurrentIndex(1);
                     break;
-                case "Advanced":
+                case "Devices":
                     pages.setCurrentIndex(2);
+                    break;
+                case "Advanced":
+                    pages.setCurrentIndex(3);
                     break;
             }
         });
@@ -399,6 +581,22 @@ class CssGUI {
             #right_pane #instructions #instructions_html {
                 flex: 1;
                 border: none;
+            }
+
+            #right_pane #device_list .device-item {
+                flex-direction: row;
+                margin-bottom: 10px;
+            }
+
+            #right_pane #device_list .device-item QPushButton {
+                height: 72px;
+                width: 80px;
+                margin-right: 8px;
+            }
+
+            #right_pane #device_list .device-item .device-title {
+                font-weight: bold;
+                font-size: 14pt;
             }
 
             #right_pane .advanced-form-field {

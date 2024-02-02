@@ -10,13 +10,15 @@ try {
 } catch(ex) {
     config = {};
 }
-console.log(config);
 
 let dnsProxyServer = new DnsProxyServer(config);
 
 io.on("connection", socket => {
     socket.on("request", (request, callback) => {
         if (request.command == "start") {
+            dnsProxyServer.onMessageReceived((message, rinfo) => {
+                socket.emit("message", {message, rinfo});
+            });
             dnsProxyServer.run();
             callback({status: "ok"});
         } else if (request.command == "stop") {

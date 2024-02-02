@@ -42,6 +42,15 @@ You should choose a valid Secondary DNS too. If you don't, your console will not
 - your default gateway (commonly your router's IP address, like 192.168.1.1)
 - Google DNS (8.8.8.8) or Cloudflare DNS (1.1.1.1)
 
+### It was working fine but something changed and it's not working anymore!
+
+There's two main situations where the setup breaks a little bit:
+
+ 1. Your computer's IP changed. Maybe because that just happens in your home network, maybe because you switched from Ethernet to Wi-Fi or vice versa. In this case, you will need to update the Primary DNS in your console again to the new address, and also update the IP address that you see in Console Streaming Server's `Advanced` page (I'm currently working on detecting such a change and automatically fix that part at least).
+ 2. You were streaming to Twitch normally before turning on Console Streaming Server. And now it keeps going directly to Twitch even if the server is on. This is because the console caches some DNS info. The quickest way to fix it is to restart your console while keeping the server on.
+
+In general, it's recommended to have Console Streaming Server up and active before trying to broadcast anything, or even before turning the console on entirely, but if the DNS is set correctly to your computer's IP, I promise a console restart will fix everything.
+
 ### Do I have to use both the DNS server and the RTMP server on the same machine?
 
 No, you can pick and choose the parts that you need. In the Advanced tab, you can select a mode between Standard, DNS Server Only, and RTMP Server Only.

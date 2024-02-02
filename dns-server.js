@@ -10,11 +10,17 @@ class DnsServer {
         this.inProcess = true;
         this.inProcessDNSServer = new DnsProxyServer(config);
         this.socket = null;
+        this.messageCallback = null;
     }
 
     getSocket() {
         if (!this.socket) {
             this.socket = io("http://127.0.0.1:3000");
+            this.socket.on("message", (message, callback) => {
+                if (this.messageCallback) {
+                    this.messageCallback(message.message, message.rinfo);
+                }
+            });
         }
         return this.socket;
     }
@@ -47,6 +53,9 @@ class DnsServer {
 
     run() {
         try {
+            if (this.messageCallback) {
+                this.inProcessDNSServer.onMessageReceived(this.messageCallback);
+            }
             this.inProcessDNSServer.run();
             this.inProcessDNSServer.socket.on("error", (err) => {this.runSeparateProcess();});
         } catch(ex) {
@@ -63,6 +72,11 @@ class DnsServer {
             });
         }
     }
+
+    onMessageReceived(callback) {
+        this.messageCallback = callback;
+    }
+
 }
 
 module.exports = DnsServer;
