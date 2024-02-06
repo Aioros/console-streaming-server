@@ -189,6 +189,57 @@ class CssGUI {
         }
     }
 
+    refreshStreams(streams, streamList) {
+        if (streams.length == 0) {
+            this.homeText.show();
+        } else {
+            this.homeText.hide();
+        }
+        streamList.children().filter(c => c.type == "widget").forEach(c => {
+            streamList.layout().removeWidget(c);
+            c.setParent(null);
+        });
+        let streamsTitle = new QT.QLabel();
+        streamsTitle.setObjectName("streams_title");
+        streamsTitle.setText("Active Streams");
+        streams.forEach((stream) => {
+            let streamURL = this.css.getRTMPServerBaseURL() + stream.streamPath;
+            let device = this.css.config.get(`devices.${stream.mac}`);
+
+            let streamItem = new QT.QWidget();
+            streamItem.setProperty("class", "stream-item");
+            streamItem.setLayout(new QT.FlexLayout());
+            let streamDeviceIcon = new QT.QPushButton();
+            streamDeviceIcon.setProperty("class", "device-icon");
+            streamDeviceIcon.setIcon(new QT.QIcon(`assets/icons/device-type-${device ? device.type : "generic"}.png`));
+            streamDeviceIcon.setIconSize(new QT.QSize(64, 64));
+            if (device) {
+                streamDeviceIcon.addEventListener("clicked", () => {
+                    this.createDeviceDialog({[stream.mac]: device}, true);
+                });
+            }
+            
+            let streamLines = new QT.QWidget();
+            streamLines.setLayout(new QT.FlexLayout());
+            streamLines.setProperty("class", "device-lines");
+            let streamDeviceTitle = new QT.QLabel();
+            streamDeviceTitle.setText(device ? device.title : "Getting device information...");
+            streamDeviceTitle.setProperty("class", "device-title");
+            let streamLink = new QT.QLabel();
+            streamLink.setTextFormat(QT.TextFormat.RichText);
+            streamLink.setTextInteractionFlags(QT.TextInteractionFlag.TextBrowserInteraction);
+            streamLink.setOpenExternalLinks(true);
+            streamLink.setText("URL: <a href=\"" + streamURL + "\">" + streamURL + "</a>");
+            streamLines.layout().addWidget(streamDeviceTitle);
+            streamLines.layout().addWidget(streamLink);
+
+            streamItem.layout().addWidget(streamDeviceIcon);
+            streamItem.layout().addWidget(streamLines);
+            streamList.layout().addWidget(streamsTitle);
+            streamList.layout().addWidget(streamItem);
+        });
+    }
+
     start() {
 
         this.createMainWindow();
@@ -290,37 +341,21 @@ class CssGUI {
             serverStopButton.setDisabled(true);
             loadingStopMovie.start();
         });
-        const homeText = new QT.QLabel();
-        homeText.setObjectName("home_text");
-        homeText.setText("Don't forget to set your console's primary DNS server as shown in the instructions tab!");
+        this.homeText = new QT.QLabel();
+        this.homeText.setObjectName("home_text");
+        this.homeText.setText("Don't forget to set your console's primary DNS server as shown in the instructions tab!");
 
         const streamList = new QT.QWidget();
         streamList.setObjectName("stream_list");
         streamList.setLayout(new QT.FlexLayout());
         this.css.onStreamsUpdated((streams) => {
-            if (streams.length == 0) {
-                homeText.show();
-            } else {
-                homeText.hide();
-            }
-            streamList.children().filter(c => c.type == "widget").forEach(c => {
-                streamList.layout().removeWidget(c);
-            });
-            streams.forEach((stream) => {
-                let streamURL = this.css.getRTMPServerBaseURL() + stream;
-                let streamLink = new QT.QLabel();
-                streamLink.setTextFormat(QT.TextFormat.RichText);
-                streamLink.setTextInteractionFlags(QT.TextInteractionFlag.TextBrowserInteraction);
-                streamLink.setOpenExternalLinks(true);
-                streamLink.setText("Active Stream: <a href=\"" + streamURL + "\">" + streamURL + "</a>");
-                streamList.layout().addWidget(streamLink);
-            });
+            this.refreshStreams(streams, streamList);
         });
 
         homePage.layout().addWidget(serverStatus);
         homePage.layout().addWidget(serverStartButton);
         homePage.layout().addWidget(serverStopButton);
-        homePage.layout().addWidget(homeText);
+        homePage.layout().addWidget(this.homeText);
         homePage.layout().addWidget(streamList);
 
         const instructionsPage = new QT.QWidget();
@@ -378,6 +413,7 @@ class CssGUI {
         this.refreshDevices(this.css.config.get("devices"), deviceList);
         this.css.config.onDidChange("devices", (devices) => {
             this.refreshDevices(devices, deviceList);
+            this.refreshStreams(this.css.getStreams(), streamList);
         });
         devicesPage.layout().addWidget(deviceList);
         
@@ -559,7 +595,7 @@ class CssGUI {
             }
 
             #right_pane #home #server_status {
-                margin: auto 30px;
+                margin: 20px auto 20px;
             }
             #right_pane #home #server_status QLabel {
                 font-size: 14pt;
@@ -571,11 +607,32 @@ class CssGUI {
             }
 
             #right_pane #home #home_text {
-                margin-top: 30px;
+                margin-top: 20px;
             }
 
-            #right_pane #home #stream_list {
-                margin-top: 30px;
+            #right_pane #home #streams_title {
+                font-weight: bold;
+                font-size: 14pt;
+                margin-bottom: 10px;
+            }
+
+            #right_pane .stream-item {
+                flex-direction: row;
+            }
+
+            #right_pane .stream-item .device-icon {
+                max-width: 90px;
+                height: 80px;
+                margin-right: 10px;
+            }
+
+            #right_pane .stream-item .device-title {
+                font-weight: bold;
+            }
+
+            #right_pane .stream-item .device-lines {
+                height: 80px;
+                padding-top: 20px;
             }
             
             #right_pane #instructions #instructions_html {

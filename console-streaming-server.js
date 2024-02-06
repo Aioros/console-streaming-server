@@ -13,6 +13,7 @@ class ConsoleStreamingServer {
         this.rtmpRunning = false;
         this.streams = [];
         this.streamsUpdatedCallbacks = [];
+        this.macSearches = [];
     }
 
     getConfig() {
@@ -44,54 +45,52 @@ class ConsoleStreamingServer {
     }
 
     async findMAC(ip) {
-        let mac;
-        //let devices = this.config.get("devices") || {};
+        let device, mac;
         let existingIP = Object.entries(this.config.get("devices") || {}).find(e => e[1].ip == ip);
 
-        if (existingIP && (Date.now() - existingIP[1].lastARP) < 60 * 1000) {
-            mac = existingIP[0];
+        if (existingIP && (Date.now() - existingIP[1].lastMessageReceived) < 60 * 1000) {
+            return existingIP[0];
         } else {
-            // temporary device to avoid other scans while we find this MAC
-            this.config.set(`devices.temp_${ip.replace(/\./g, "")}`, {ip, lastARP: Date.now()});
-
-            let {hosts} = await this.arpping.ping([ip]).then(({hosts}) => {
-                return this.arpping.arp(hosts);
-            });
-            if (hosts[0]?.mac) {
-                mac = hosts[0]?.mac;
-                if (this.config.get(`devices.${mac}`)) {
-                    this.config.set(`devices.${mac}.ip`, ip);
-                } else {
-                    this.config.set(`devices.${mac}`, {ip});
-                    let type = "generic";
-                    try {
-                        let ouiResponse = await fetch("https://www.macvendorlookup.com/api/v2/" + mac.replace(/-/g, ""));
-                        let { company } = (await ouiResponse.json())[0];
-                        if (company.toLowerCase().includes("sony")) {
-                            type = "playstation";
-                        } else if (company.toLowerCase().includes("microsoft")) {
-                            type = "xbox";
+            if (!this.macSearches[ip]) {
+                this.macSearches[ip] = (async (ip) => {
+                    let {hosts} = await this.arpping.ping([ip]).then(({hosts}) => {
+                        return this.arpping.arp(hosts);
+                    });
+                    if (hosts[0]?.mac) {
+                        mac = hosts[0]?.mac;
+                        if (this.config.get(`devices.${mac}`)) {
+                            device = this.config.get(`devices.${mac}`);
+                            device.ip = ip;
+                        } else {
+                            device = {ip};
+                            device.type = "generic";
+                            try {
+                                let ouiResponse = await fetch("https://www.macvendorlookup.com/api/v2/" + mac.replace(/-/g, ""));
+                                let { company } = (await ouiResponse.json())[0];
+                                if (company.toLowerCase().includes("sony") || company.toLowerCase().includes("liteon") || company.toLowerCase().includes("azurewave")) {
+                                    device.type = "playstation";
+                                } else if (company.toLowerCase().includes("microsoft")) {
+                                    device.type = "xbox";
+                                }
+                            } catch (ex) {}
+        
+                            if (device.type == "generic") {
+                                device.title = "Unknown Device";
+                            } else if (device.type == "playstation") {
+                                device.title = "Playstation (auto-detected)";
+                            } else if (device.type == "playstation") {
+                                device.title = "Xbox (auto-detected)";
+                            }
                         }
-                    } catch (ex) {}
-
-                    this.config.set(`devices.${mac}.type`, type);
-                    if (type == "generic") {
-                        this.config.set(`devices.${mac}.title`, "Unknown Device");
-                    } else if (type == "playstation") {
-                        this.config.set(`devices.${mac}.title`, "Playstation (auto-detected)");
-                    } else if (type == "playstation") {
-                        this.config.set(`devices.${mac}.title`, "Xbox (auto-detected)");
+                        device.lastMessageReceived = Date.now();
+                        this.config.set(`devices.${mac}`, device);
+                        delete this.macSearches[ip];
+                        return mac;
                     }
-                }
-                this.config.set(`devices.${mac}.lastARP`, Date.now());
-                this.config.delete(`devices.temp_${ip.replace(/\./g, "")}`);
+                })(ip);
             }
-
+            return this.macSearches[ip];
         }
-
-        this.config.set(`devices.${mac}.lastMessageReceived`, Date.now());
-        return mac;
-    
     }
 
     startDNS() {
@@ -108,7 +107,7 @@ class ConsoleStreamingServer {
             this.dnsProxyServer.onMessageReceived((message, rinfo) => {
                 if (rinfo.address != this.mainIP) {
                     console.log("DNS request from: " + rinfo.address);
-                    let mac = this.findMAC(rinfo.address).then((mac) => {
+                    this.findMAC(rinfo.address).then((mac) => {
                         console.log("MAC: " + mac);
                     });
                 }
@@ -157,17 +156,21 @@ class ConsoleStreamingServer {
         this.nodeMediaServer = new NodeMediaServer(this.nmsConfig);
         this.nodeMediaServer.on("postPublish", (id, streamPath, args) => {
             console.log("Receiving stream", `id=${id} StreamPath=${streamPath} args=${JSON.stringify(args)}`);
-            if (!this.streams.includes(streamPath)) {
-                this.streams.push(streamPath);
+            if (!this.streams.find(s => s.streamPath == streamPath)) {
+                let ip = this.nodeMediaServer.getSession(id).ip.replace(/^.*:/, "");
+                this.streams.push({mac: "", ip, streamPath});
+                this.findMAC(ip).then((mac) => {
+                    this.streams.find(s => s.streamPath == streamPath).mac = mac;
+                    // stream path looks like: /app/live_157929848_DWzeddUhYx6ST73aXI0YE3yO1vdy50
+                    this.streamsUpdatedCallbacks.forEach(fn => {
+                        fn(this.streams);
+                    });
+                });
             }
-            // stream path looks like: /app/live_157929848_DWzeddUhYx6ST73aXI0YE3yO1vdy50
-            this.streamsUpdatedCallbacks.forEach(fn => {
-                fn(this.streams);
-            });
         });
         this.nodeMediaServer.on("donePublish", (id, streamPath, args) => {
             console.log("Done with stream", `id=${id} StreamPath=${streamPath} args=${JSON.stringify(args)}`);
-            this.streams = this.streams.filter(s => s != streamPath);
+            this.streams = this.streams.filter(s => s.streamPath != streamPath);
             this.streamsUpdatedCallbacks.forEach(fn => {
                 fn(this.streams);
             });
