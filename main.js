@@ -1,23 +1,31 @@
 const CssGUI = require("./gui.js");
 const ConsoleStreamingServer = require("./console-streaming-server.js");
 
+async function getNetworkInfo() {
+    try {
+        const { internalIpV4 } = await import("internal-ip");
+        const { gateway4async } = await import("default-gateway");
+        const { contains } = await import("cidr-tools");
+        const os = require("node:os");
+        let internalIp = await internalIpV4();
+        let defaultGateway = await gateway4async();
+        let networkInterfaceName;
+        for (let [name, addresses] of Object.entries(os.networkInterfaces())) {
+            for (const {cidr} of addresses) {
+                if (contains(cidr, defaultGateway.gateway)) {
+                    networkInterfaceName = name;
+                }
+            }
+        }
+        return {internalIp, networkInterfaceName};
+    } catch(ex) {
+        return {internalIp: undefined, networkInterfaceName: undefined};
+    }
+}
+
 async function main() {
     const { default: Conf } = await import("conf");
-    const { internalIpV4 } = await import("internal-ip");
-    const { gateway4async } = await import("default-gateway");
-    const { contains } = await import("cidr-tools");
-    const os = require("node:os");
-    let internalIp = await internalIpV4();
-    let defaultGateway = await gateway4async();
-    let networkInterfaceName;
-    
-    for (let [name, addresses] of Object.entries(os.networkInterfaces())) {
-        for (const {cidr} of addresses) {
-			if (contains(cidr, defaultGateway.gateway)) {
-				networkInterfaceName = name;
-			}
-		}
-    }
+    let {internalIp, networkInterfaceName} = await getNetworkInfo();
 
     const defaultConfig = {
         dns: {
@@ -49,6 +57,17 @@ async function main() {
     var gui = new CssGUI(server);
 
     gui.start();
+
+    setInterval(async () => {
+        let newNetworkInfo = await getNetworkInfo();
+        if (newNetworkInfo.internalIp && newNetworkInfo.internalIp != internalIp) {
+            internalIp = newNetworkInfo.internalIp;
+            networkInterfaceName = newNetworkInfo.networkInterfaceName;
+            server.setMainIP(internalIp);
+            server.setNetworkInterfaceName(networkInterfaceName);
+            gui.onNetworkChange(newNetworkInfo);
+        }
+    }, 5000);
 }
 
 main();

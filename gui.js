@@ -240,6 +240,84 @@ class CssGUI {
         });
     }
 
+    onNetworkChange(networkInfo) {
+        const networkChangeDialog = new QT.QMessageBox();
+        networkChangeDialog.setWindowTitle("Network change detected");
+        networkChangeDialog.setText("There was a change in your network setup. The server will restart.");
+        let text = "";
+        if (this.css.config.get("dns.active") && this.css.config.get("rtmp.active")) {
+            text += "<p>Do you want to automatically update internal settings to the new IP (" + networkInfo.internalIp + ")?</p>";
+            text += "<p>You will still need to update your console's DNS and the stream URL in your other applications like OBS.</p>";
+        } else if (this.css.config.get("dns.active") ) {
+            text += "<p>You will need to change your console's primary DNS to the new IP (" + networkInfo.internalIp + ").</p>";
+        } else if (this.css.config.get("rtmp.active")) {
+            text += "<p>Make sure to send your broadcasts to the new IP (" + networkInfo.internalIp + ").</p>";
+        }
+        networkChangeDialog.setInformativeText(text);
+        if (this.css.config.get("dns.active") && this.css.config.get("rtmp.active")) {
+            const cancel = new QT.QPushButton();
+            cancel.setText("No, keep my settings");
+            networkChangeDialog.addButton(cancel, QT.ButtonRole.RejectRole);
+        }
+        const accept = new QT.QPushButton();
+        if (this.css.config.get("dns.active") && this.css.config.get("rtmp.active")) {
+            accept.setText("Autoupdate settings");
+        } else {
+            accept.setText("Ok");
+        }
+        networkChangeDialog.addButton(accept, QT.ButtonRole.AcceptRole);
+        let answer = networkChangeDialog.exec();
+        switch (answer) {
+            case QT.DialogCode.Rejected:
+                break;
+            case QT.DialogCode.Accepted:
+                if (this.css.config.get("dns.active") && this.css.config.get("rtmp.active")) {
+                    this.css.config.set("dns.sendTo", networkInfo.internalIp)
+                }
+                break;
+        }
+
+        this.instructionsBrowser.setHtml(this.getInstructionsHTML(this.css.getMainIP()));
+
+        if (this.css.dnsRunning || this.css.rtmpRunning) {
+            this.css.start();
+        }
+    }
+
+    getInstructionsHTML(mainIP) {
+        return `
+            <h1>Standard Setup (recommended for most users)</h1>
+            <p>In your console's network settings, change the Primary DNS to this device's IP address (${mainIP}).<br>
+            Having a valid Secondary DNS is recommended to avoid connection issues when this server is offline; you could use the original Primary, or any other DNS server you might like (i.e. Google's 8.8.8.8 or Cloudflare's 1.1.1.1).</p>
+            <p>For example, if you have a PS5:</p>
+            <p><ul><li>From the home screen, go to "Settings" -> "Network" -> "Settings" -> "Set up internet connection"</li>
+            <li>Move to your preferred connection and click the Option button to find the "Advanced settings" screen</li>
+            <li>Change the Secondary DNS to your current Primary DNS or any other DNS you would like to use</li>
+            <li>Change the Primary DNS to this server's address (${mainIP})</li></ul>
+            <p>Now you can just start the server; when you start a stream to Twitch from your console, the stream will actually be sent and published to this device.</p>
+            <p>From there, you're free to do whatever you want with your stream. If you use OBS, for example, you can copy the stream URL from the home page and add it to your scene as a Media Source (see below for <a href="#obs">OBS-specific instructions</a>).
+            You can then alter your scene to your liking, add your favorite overlays, and restream to Twitch or anywhere you want.</p>
+            <h1>How it works</h1>
+            <p>Console Streaming Server is made of two core parts: a DNS server and an RTMP server. When a console tries to stream to Twitch, it tries to connect to what is called an RTMP ingest server and send it an RTMP stream.</p>
+            <p>In order to do that, it makes a DNS request to get the IP address of the ingest server. By changing the primary DNS of the console, this request gets processed by a small, custom DNS server that replaces that IP with your own.</p>
+            <p>The stream from the console is then received by the custom RTMP server, and is available in your network for any kind of processing.</p>
+            <p>You can also choose to run only the DNS part or the RTMP part (see <a href="#advanced">Advanced Setup</a> below). This can be useful if you already have a DNS or RTMP server, or if you want to run them in separate machines.</p>
+            <h1 id="advanced">Advanced Setup</h1>
+            <p>In the "Advanced" tab, you can choose one of three modes: "Standard" is the default one, with both servers active on the same machine. But you can also decide, for example, that you want the DNS server on one device and the RTMP server on a more performant one.<br>
+            In that case, you would run the application on both machines, selecting "DNS Server Only" on the former, and "RTMP Server Only" on the latter. When you choose "DNS Only", make sure to also indicate the IP address of the separate RTMP server.<br>
+            The network setup on the console would not change: you would still only need to point the Primary DNS to wherever the DNS server is running.</p>
+            <h1 id="obs">OBS Instructions</h1>
+            <p>Once everything is setup and Console Streaming Server receives a stream, you will see a link in the home page. If you want to add the stream to a scene in OBS, you can create a new Media Source with the following settings:</p>
+            <ul><li>Local File: Off</li>
+            <li>Input: the stream link from the server's home page (it will be something like <i>rtmp://&lt;youripaddress&gt;/app/&lt;yourstreamkey&gt;</i>)</li>
+            <li>Input Format: rtmp</li></ul>
+            <h1>FAQ</h1>
+            <h2>What about every other service beside Twitch?</h2>
+            <p>At the moment, Twitch is the only supported streaming service, since it's easily the most used. But this doesn't mean that you can only use Console Streaming Server to stream to Twitch! Instead, it means that the "trick" only works
+            if you choose Twitch when you start streaming from the console, but once it's captured you can use your tools to restream it wherever you want (but other built-in console integrations, like chat messages and viewers count, will not work).</p>
+        `
+    }
+
     start() {
 
         this.createMainWindow();
@@ -362,47 +440,17 @@ class CssGUI {
         instructionsPage.setObjectName("instructions");
         instructionsPage.setLayout(new QT.FlexLayout());
 
-        const tb = new QT.QTextBrowser();
-        tb.setObjectName("instructions_html");
-        tb.setOpenExternalLinks(true);
-        tb.setHtml(`
-            <h1>Standard Setup (recommended for most users)</h1>
-            <p>In your console's network settings, change the Primary DNS to this device's IP address (${this.css.getMainIP()}).<br>
-            Having a valid Secondary DNS is recommended to avoid connection issues when this server is offline; you could use the original Primary, or any other DNS server you might like (i.e. Google's 8.8.8.8 or Cloudflare's 1.1.1.1).</p>
-            <p>For example, if you have a PS5:</p>
-            <p><ul><li>From the home screen, go to "Settings" -> "Network" -> "Settings" -> "Set up internet connection"</li>
-            <li>Move to your preferred connection and click the Option button to find the "Advanced settings" screen</li>
-            <li>Change the Secondary DNS to your current Primary DNS or any other DNS you would like to use</li>
-            <li>Change the Primary DNS to this server's address (${this.css.getMainIP()})</li></ul>
-            <p>Now you can just start the server; when you start a stream to Twitch from your console, the stream will actually be sent and published to this device.</p>
-            <p>From there, you're free to do whatever you want with your stream. If you use OBS, for example, you can copy the stream URL from the home page and add it to your scene as a Media Source (see below for <a href="#obs">OBS-specific instructions</a>).
-            You can then alter your scene to your liking, add your favorite overlays, and restream to Twitch or anywhere you want.</p>
-            <h1>How it works</h1>
-            <p>Console Streaming Server is made of two core parts: a DNS server and an RTMP server. When a console tries to stream to Twitch, it tries to connect to what is called an RTMP ingest server and send it an RTMP stream.</p>
-            <p>In order to do that, it makes a DNS request to get the IP address of the ingest server. By changing the primary DNS of the console, this request gets processed by a small, custom DNS server that replaces that IP with your own.</p>
-            <p>The stream from the console is then received by the custom RTMP server, and is available in your network for any kind of processing.</p>
-            <p>You can also choose to run only the DNS part or the RTMP part (see <a href="#advanced">Advanced Setup</a> below). This can be useful if you already have a DNS or RTMP server, or if you want to run them in separate machines.</p>
-            <h1 id="advanced">Advanced Setup</h1>
-            <p>In the "Advanced" tab, you can choose one of three modes: "Standard" is the default one, with both servers active on the same machine. But you can also decide, for example, that you want the DNS server on one device and the RTMP server on a more performant one.<br>
-            In that case, you would run the application on both machines, selecting "DNS Server Only" on the former, and "RTMP Server Only" on the latter. When you choose "DNS Only", make sure to also indicate the IP address of the separate RTMP server.<br>
-            The network setup on the console would not change: you would still only need to point the Primary DNS to wherever the DNS server is running.</p>
-            <h1 id="obs">OBS Instructions</h1>
-            <p>Once everything is setup and Console Streaming Server receives a stream, you will see a link in the home page. If you want to add the stream to a scene in OBS, you can create a new Media Source with the following settings:</p>
-            <ul><li>Local File: Off</li>
-            <li>Input: the stream link from the server's home page (it will be something like <i>rtmp://&lt;youripaddress&gt;/app/&lt;yourstreamkey&gt;</i>)</li>
-            <li>Input Format: rtmp</li></ul>
-            <h1>FAQ</h1>
-            <h2>What about every other service beside Twitch?</h2>
-            <p>At the moment, Twitch is the only supported streaming service, since it's easily the most used. But this doesn't mean that you can only use Console Streaming Server to stream to Twitch! Instead, it means that the "trick" only works
-            if you choose Twitch when you start streaming from the console, but once it's captured you can use your tools to restream it wherever you want (but other built-in console integrations, like chat messages and viewers count, will not work).</p>
-        `);
+        this.instructionsBrowser = new QT.QTextBrowser();
+        this.instructionsBrowser.setObjectName("instructions_html");
+        this.instructionsBrowser.setOpenExternalLinks(true);
+        this.instructionsBrowser.setHtml(this.getInstructionsHTML(this.css.getMainIP()));
 
         const instructionsImageLabel = new QT.QLabel();
         const instructionsImage = new QT.QMovie();
         instructionsImage.setFileName("assets/images/instructions.gif");
         instructionsImage.start();
         instructionsImageLabel.setMovie(instructionsImage);
-        instructionsPage.layout().addWidget(tb);
+        instructionsPage.layout().addWidget(this.instructionsBrowser);
 
         const devicesPage = new QT.QWidget();
         devicesPage.setObjectName("devices");
@@ -428,6 +476,9 @@ class CssGUI {
         if (!this.css.getConfig().get("rtmp.http")) {
             nodeMediaServerLink.setDisabled(true);
         }
+        this.css.config.onDidChange("dns.sendTo", (sendTo) => {
+            nodeMediaServerLink.setText("<a href=\"http://" + sendTo + ":" + this.css.getConfig().get("rtmp.http.port") + "/admin\">Open NodeMediaServer admin page</a>");
+        });
         const modeField = new QT.QWidget();
         modeField.setLayout(new QT.FlexLayout());
         modeField.setProperty("class", "advanced-form-field");
@@ -474,6 +525,9 @@ class CssGUI {
         dnsSendToInput.setText(this.css.config.get("dns.sendTo"));
         dnsSendToInput.addEventListener("textEdited", (newText) => {
             this.css.getConfig().set("dns.sendTo", newText);
+        });
+        this.css.config.onDidChange("dns.sendTo", (sendTo) => {
+            dnsSendToInput.setText(sendTo);
         });
         dnsSendToField.layout().addWidget(dnsSendToLabel);
         dnsSendToField.layout().addWidget(dnsSendToInput);
