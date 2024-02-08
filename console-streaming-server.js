@@ -6,6 +6,7 @@ const Arpping = require("arpping");
 class ConsoleStreamingServer {
     constructor(config) {
         this.mainIP = "";
+        this.version = "";
         this.networkInterfaceName = "";
         this.config = config;
         this.arpping = null;
@@ -22,6 +23,14 @@ class ConsoleStreamingServer {
 
     setMainIP(ip) {
         this.mainIP = ip;
+    }
+
+    getVersion() {
+        return this.version
+    }
+    
+    setVersion(version) {
+        this.version = version;
     }
 
     setNetworkInterfaceName(interfaceName) {

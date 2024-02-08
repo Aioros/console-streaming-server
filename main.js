@@ -1,5 +1,6 @@
 const CssGUI = require("./gui.js");
 const ConsoleStreamingServer = require("./console-streaming-server.js");
+const semver = require("semver");
 
 async function getNetworkInfo() {
     try {
@@ -55,8 +56,19 @@ async function main() {
     server.setMainIP(internalIp);
     server.setNetworkInterfaceName(networkInterfaceName);
     var gui = new CssGUI(server);
+    let {version} = require('./package.json');
+    server.setVersion(version);
 
     gui.start();
+
+    try {
+        let response = await fetch("https://api.github.com/repos/Aioros/console-streaming-server/releases/latest");
+        let json = await response.json();
+        let latestTag = json.tag_name.replace(/\w/, "");
+        if (semver.gt(latestTag, version)) {
+            gui.onUpdateAvailable(latestTag);
+        }
+    } catch(ex) {}
 
     setInterval(async () => {
         let newNetworkInfo = await getNetworkInfo();

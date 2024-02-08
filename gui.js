@@ -240,6 +240,11 @@ class CssGUI {
         });
     }
 
+    onUpdateAvailable(latestVersion) {
+        this.updateAlert.setText(`There's a <a href="https://github.com/Aioros/console-streaming-server/releases/latest/download/ConsoleStreamingServer.zip" style="color: white">new version</a> of Console Streaming Server available (v${latestVersion}).`);
+        this.updateAlert.show();
+    }
+
     onNetworkChange(networkInfo) {
         const networkChangeDialog = new QT.QMessageBox();
         networkChangeDialog.setWindowTitle("Network change detected");
@@ -331,6 +336,12 @@ class CssGUI {
         title.setText("Console Streaming Server");
         leftPane.layout().addWidget(title);
 
+        const version = new QT.QLabel();
+        version.setObjectName("version");
+        version.setText("v" + this.css.getVersion());
+        version.setAlignment(QT.AlignmentFlag.AlignRight);
+        leftPane.layout().addWidget(version);
+
         const tabs = new QT.QListWidget();
         tabs.setSpacing(20);
         const homeTab = new QT.QListWidgetItem("Home");
@@ -340,7 +351,7 @@ class CssGUI {
         instructionsTab.setIcon(new QT.QIcon("assets/icons/instructions.png"));
         tabs.addItem(instructionsTab);
         const devicesTab = new QT.QListWidgetItem("Devices")
-        devicesTab.setIcon(new QT.QIcon("assets/icons/instructions.png"));
+        devicesTab.setIcon(new QT.QIcon("assets/icons/device-type-generic.png"));
         tabs.addItem(devicesTab);
         const advancedTab = new QT.QListWidgetItem("Advanced");
         advancedTab.setIcon(new QT.QIcon("assets/icons/advanced.png"));
@@ -350,6 +361,15 @@ class CssGUI {
         const rightPane = new QT.QWidget();
         rightPane.setObjectName("right_pane");
         rightPane.setLayout(new QT.FlexLayout());
+
+        this.updateAlert = new QT.QLabel();
+        this.updateAlert.setObjectName("update_alert");
+        this.updateAlert.setTextFormat(QT.TextFormat.RichText);
+        this.updateAlert.setTextInteractionFlags(QT.TextInteractionFlag.TextBrowserInteraction);
+        this.updateAlert.setOpenExternalLinks(true);
+        this.updateAlert.hide();
+
+        rightPane.layout().addWidget(this.updateAlert);
         
         const pages = new QT.QStackedWidget();
         pages.setObjectName("pages");
@@ -621,9 +641,27 @@ class CssGUI {
                 border-right: 1px solid #ddd;
             }
 
+            #update_alert {
+                background-color: rgb(107,190,102);
+                color: white;
+                font-weight: bold;
+                margin: 10px;
+                padding: 4px;
+                border-radius: 4px;
+            }
+
+            #update_alert a {
+                color: white;
+            }
+
             #left_pane #title {
                 font-size: 22pt;
-                padding: 10px;
+                padding: 10px 10px 0;
+            }
+
+            #left_pane #version {
+                font-size: 14pt;
+                padding: 0 10px 10px;
             }
 
             #left_pane QListWidget {
