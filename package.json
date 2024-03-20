@@ -12,7 +12,7 @@
     "pkgdns": "npx --yes pkg -t node18 ./dns-server-child.js --out-path ./dist",
     "nodeguipack": "npx @aiorosdev/nodegui-packer --pack ./dist",
     "nodeguipacklinux": "npx @aiorosdev/nodegui-packer --pack ./dist --no-appimage",
-    "copyassets": "cpy assets ./dist/",
+    "copyassets": "cpy assets ./dist/ && cpy player.html ./dist/",
     "modulelicenses": "node ./lic-packager.js",
     "renamewin32": "cd deploy/win32/build/ConsoleStreamingServer && node -e \"require('fs').rename('qode.exe', 'ConsoleStreamingServer.exe', () => {})\"",
     "moveqttodist": "cd deploy/win32/build/ConsoleStreamingServer && node -e \"const fs = require('fs'); fs.readdirSync('.').filter((file) => file.startsWith('Qt') && file.endsWith('.dll')).forEach((dll) => { fs.rename(dll, 'dist/'+dll, () => {}) });\"",

@@ -236,7 +236,7 @@ class CssGUI {
             streamPreviewLink.setTextInteractionFlags(QT.TextInteractionFlag.TextBrowserInteraction);
             streamPreviewLink.setOpenExternalLinks(true);
             let httpBaseURL = "http://" + this.css.getConfig().get("dns.sendTo") + ":" + this.css.getConfig().get("rtmp.http.port");
-            streamPreviewLink.setText("<a href=\"" + httpBaseURL + "/player2.html?streamURL=" + stream.streamPath + ".flv\">Preview</a>");
+            streamPreviewLink.setText("<a href=\"" + httpBaseURL + "/player.html?streamURL=" + stream.streamPath + ".flv\">View in browser</a>");
 
             streamLines.layout().addWidget(streamDeviceTitle);
             streamLines.layout().addWidget(streamLink);
