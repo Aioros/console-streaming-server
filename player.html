@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link href="https://unpkg.com/video.js/dist/video-js.css" rel="stylesheet">
+</head>
+
+<body>
+    <video id="stream_preview" controls preload="auto" class="video-js">
+        <p class="vjs-no-js">To view this video please enable JavaScript, and consider upgrading to a web browser that <a href="https://videojs.com/html5-video-support/" target="_blank">supports HTML5 video</a></p>
+    </video>
+
+    <script src="https://unpkg.com/video.js/dist/video.min.js"></script>
+    <script src="https://unpkg.com/flv.js/dist/flv.min.js"></script>
+    <script src="https://unpkg.com/videojs-flvjs/dist/videojs-flvjs.min.js"></script>
+
+    <script>
+        const url = new URL(location.href);
+        var streamURL = url.searchParams.get("streamURL");
+        var myPlayer = videojs("stream_preview");
+        myPlayer.src({type: 'video/x-flv', src: streamURL});
+    </script>
+</body>
+</html>

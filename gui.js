@@ -196,6 +196,7 @@ class CssGUI {
             this.homeText.hide();
         }
         streamList.children().filter(c => c.type == "widget").forEach(c => {
+            c.hide();
             streamList.layout().removeWidget(c);
             c.setParent(null);
         });
@@ -230,8 +231,18 @@ class CssGUI {
             streamLink.setTextInteractionFlags(QT.TextInteractionFlag.TextBrowserInteraction);
             streamLink.setOpenExternalLinks(true);
             streamLink.setText("URL: <a href=\"" + streamURL + "\">" + streamURL + "</a>");
+            let streamPreviewLink = new QT.QLabel();
+            streamPreviewLink.setTextFormat(QT.TextFormat.RichText);
+            streamPreviewLink.setTextInteractionFlags(QT.TextInteractionFlag.TextBrowserInteraction);
+            streamPreviewLink.setOpenExternalLinks(true);
+            let httpBaseURL = "http://" + this.css.getConfig().get("dns.sendTo") + ":" + this.css.getConfig().get("rtmp.http.port");
+            streamPreviewLink.setText("<a href=\"" + httpBaseURL + "/player2.html?streamURL=" + stream.streamPath + ".flv\">Preview</a>");
+
             streamLines.layout().addWidget(streamDeviceTitle);
             streamLines.layout().addWidget(streamLink);
+            if (this.css.getConfig().get("rtmp.http")) {
+                streamLines.layout().addWidget(streamPreviewLink);
+            }
 
             streamItem.layout().addWidget(streamDeviceIcon);
             streamItem.layout().addWidget(streamLines);

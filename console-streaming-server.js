@@ -159,6 +159,7 @@ class ConsoleStreamingServer {
         if (this.config.get("rtmp.http.active")) {
             this.nmsConfig.http = {
                 port: this.config.get("rtmp.http.port"),
+                webroot: __dirname,
                 allow_origin: "*"
             }
         }
