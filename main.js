@@ -33,10 +33,6 @@ async function main() {
             active: true,
             host: "0.0.0.0",
             port: 53,
-            domains: [
-                "*.contribute.live-video.net",
-                "live*.twitch.tv"
-            ],
             sendTo: internalIp
         },
         rtmp: {
@@ -51,6 +47,10 @@ async function main() {
     };
 
     const config = new Conf({projectName: "consolestreamingserver", defaults: defaultConfig});
+    config.set("dns.domains", [
+        "*contribute.live-video.net",
+        "live*.twitch.tv"
+    ]);
 
     var server = new ConsoleStreamingServer(config);
     server.setMainIP(internalIp);
