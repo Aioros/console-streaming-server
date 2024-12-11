@@ -1,6 +1,6 @@
 {
   "name": "console-streaming-server",
-  "version": "1.2.7",
+  "version": "1.2.8",
   "description": "",
   "main": "main.js",
   "scripts": {
@@ -8,7 +8,7 @@
     "debug": "qode --inspect main.js",
     "build": "run-script-os",
     "webpack": "webpack",
-    "distinstall": "cd dist && npm init -y && npm install express bufferutil utf-8-validate node-media-server",
+    "distinstall": "cd dist && npm init -y && npm install express bufferutil utf-8-validate node-media-server@2.X",
     "pkgdns": "npx --yes pkg -t node18 ./dns-server-child.js --out-path ./dist",
     "nodeguipack": "npx @aiorosdev/nodegui-packer --pack ./dist",
     "nodeguipacklinux": "npx @aiorosdev/nodegui-packer --pack ./dist --no-appimage",
@@ -36,17 +36,17 @@
   "homepage": "https://github.com/Aioros/console-streaming-server#readme",
   "dependencies": {
     "@aiorosdev/dns-proxy-lib": "^1.1.0",
-    "@nodegui/nodegui": "^0.62.0",
+    "@nodegui/nodegui": "^0.70.0",
     "arpping": "^4.0.0",
-    "cidr-tools": "^7.0.4",
-    "conf": "^12.0.0",
+    "cidr-tools": "^11.0.2",
+    "conf": "^13.1.0",
     "default-gateway": "^7.2.2",
     "internal-ip": "^7.0.0",
-    "node-media-server": "^2.6.2",
-    "rtmp-client": "^1.5.3",
-    "semver": "^7.6.0",
-    "socket.io": "^4.7.2",
-    "socket.io-client": "^4.7.2",
+    "node-media-server": "^2.7.4",
+    "rtmp-client": "^1.6.3",
+    "semver": "^7.6.3",
+    "socket.io": "^4.8.1",
+    "socket.io-client": "^4.8.1",
     "sudo-prompt": "^9.2.1"
   },
   "devDependencies": {
@@ -54,9 +54,9 @@
     "cpy-cli": "^5.0.0",
     "fs-extra": "^11.2.0",
     "license-checker": "^25.0.1",
-    "node-loader": "^2.0.0",
+    "node-loader": "^2.1.0",
     "run-script-os": "^1.1.6",
-    "webpack": "^5.89.0",
+    "webpack": "^5.97.1",
     "webpack-cli": "^5.1.4"
   }
 }

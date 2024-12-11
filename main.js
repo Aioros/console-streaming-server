@@ -6,14 +6,14 @@ async function getNetworkInfo() {
     try {
         const { internalIpV4 } = await import("internal-ip");
         const { gateway4async } = await import("default-gateway");
-        const { contains } = await import("cidr-tools");
+        const { containsCidr } = await import("cidr-tools");
         const os = require("node:os");
         let internalIp = await internalIpV4();
         let defaultGateway = await gateway4async();
         let networkInterfaceName;
         for (let [name, addresses] of Object.entries(os.networkInterfaces())) {
             for (const {cidr} of addresses) {
-                if (contains(cidr, defaultGateway.gateway)) {
+                if (containsCidr(cidr, defaultGateway.gateway)) {
                     networkInterfaceName = name;
                 }
             }
